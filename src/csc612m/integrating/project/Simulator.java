@@ -41,6 +41,9 @@ public class Simulator {
         }};
     }
     
+    //we should probably dissect the pipeline's execution as each function (etc. Decode = 1 function, PC = 1 function, 
+    //so we can reflect the state of the simulator back to the GUI
+    
     public void parse_line(String line, int line_number)
     {
         String instruction = opcode_map.get(line);
