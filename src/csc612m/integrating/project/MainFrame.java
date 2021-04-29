@@ -14,10 +14,10 @@ public class MainFrame extends javax.swing.JFrame {
     /**
      * Creates new form MainFrame
      */
-    Simulator simulator;
+    Pipeline pipeline;
     public MainFrame() {
         initComponents();
-        simulator = new Simulator();
+        pipeline = new Pipeline();
     }
 
     /**
@@ -102,8 +102,10 @@ public class MainFrame extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
+        jTable1.setColumnSelectionAllowed(true);
         jTable1.getTableHeader().setReorderingAllowed(false);
         jScrollPane2.setViewportView(jTable1);
+        jTable1.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         if (jTable1.getColumnModel().getColumnCount() > 0) {
             jTable1.getColumnModel().getColumn(0).setResizable(false);
             jTable1.getColumnModel().getColumn(1).setResizable(false);
@@ -319,7 +321,7 @@ public class MainFrame extends javax.swing.JFrame {
     {
         //parse or read line here
         System.out.println(lines[current_line]);
-        simulator.parse_line(lines[current_line], current_line);
+        pipeline.parse_line(lines[current_line], current_line);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
