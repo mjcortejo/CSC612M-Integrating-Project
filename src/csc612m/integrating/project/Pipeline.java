@@ -19,26 +19,26 @@ public class Pipeline {
     public Pipeline()
     {
         opcode_map = new HashMap<String, String>() {{
-            put("lw", "");
-            put("sw", "");
-            put("add", "");
-            put("addi", "");
-            put("slt", "");
-            put("slti", "");
-            put("sll", "");
-            put("slli", "");
-            put("srl", "");
-            put("srli", "");
-            put("and", "");
-            put("andi", "");
-            put("or", "");
-            put("ori", "");
-            put("xor", "");
-            put("xori", "");
-            put("beq", "");
-            put("bne", "");
-            put("blt", "");
-            put("bge", "");
+            put("lw",  "0000011");
+            put("sw",  "0100011");
+            put("add", "0110011");
+            put("addi","0010011");
+            put("slt", "0110011");
+            put("slti","0010011");
+            put("sll", "0110011");
+            put("slli","0010011");
+            put("srl", "0110011");
+            put("srli","0010011");
+            put("and", "0110011");
+            put("andi","0010011");
+            put("or",  "0110011");
+            put("ori", "0010011");
+            put("xor", "0110011");
+            put("xori","0010011");
+            put("beq", "1100011");
+            put("bne", "1100011");
+            put("blt", "1100011");
+            put("bge", "1100011");
         }};
     }
     
@@ -71,6 +71,8 @@ public class Pipeline {
             case "lw":
                 load_word(params[0], params[1]);
                 break;
+            case "sw":
+                store_word(params[0], params[1]);
             default:
                 System.out.println("Invalid instruction at line number "+line_number);
                 break;
@@ -82,7 +84,12 @@ public class Pipeline {
     
     public void load_word(String rd, String rs1)
     {
-        System.out.println("rd: "+rd);
-        System.out.println("rs1: "+rs1);
+        //TODO
+        //we should check invalid registers here as well
+    }
+    
+    public void store_word(String rd, String rs1)
+    {
+        //TODO
     }
 }
