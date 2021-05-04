@@ -15,9 +15,45 @@ public class MainFrame extends javax.swing.JFrame {
      * Creates new form MainFrame
      */
     Pipeline pipeline;
+    DefaultTableModel register_table;
+    HashMap<String, Integer> register_alias_map;
+    
     public MainFrame() {
         initComponents();
         pipeline = new Pipeline();
+        
+        register_alias_map = new HashMap<String, Integer>() {{ //this is used when the instruction is invoking the alias name which will point to a row number (the integer value)
+            put("t0", 5);
+            put("t1", 6);
+            put("t2", 7);
+            put("s0", 8);
+            put("s1", 9);
+            put("a0", 10);
+            put("a1", 11);
+            put("a2", 12);
+            put("a3", 13);
+            put("a4", 14);
+            put("a5", 15);
+            put("a6", 16);
+            put("a7", 17);
+            put("s2", 18);
+            put("s3", 19);
+            put("s4", 20);
+            put("s5", 21);
+            put("s6", 22);
+            put("s7", 23);
+            put("s8", 24);
+            put("s9", 25);
+            put("s10", 26);
+            put("s11", 27);
+            put("t3", 28);
+            put("t4", 29);
+            put("t5", 30);
+            put("t6", 31);
+        }};
+        
+        System.out.println("table has " +jTableRegister.getRowCount() + "rows");
+        this.register_table = (DefaultTableModel)jTableRegister.getModel();
     }
 
     /**
