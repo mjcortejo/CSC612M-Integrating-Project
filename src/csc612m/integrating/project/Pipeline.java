@@ -7,45 +7,107 @@ package csc612m.integrating.project;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
  * @author mark
  */
+//Binary computation https://www.w3resource.com/java-exercises/basic/java-basic-exercise-19.php
+//Hex computation https://www.w3resource.com/java-exercises/basic/java-basic-exercise-29.php
 public class Pipeline {
     
-    HashMap<String, String> opcode_map;
+    
+    HashMap<String, int[]> instruction_opcode_map;
+    HashMap<String, Integer> register_alias_map;
+    int[] binary_opcode = new int[32];    
     
     public Pipeline()
     {
-        opcode_map = new HashMap<String, String>() {{
-            put("lw",  "0000011");
-            put("sw",  "0100011");
-            put("add", "0110011");
-            put("addi","0010011");
-            put("slt", "0110011");
-            put("slti","0010011");
-            put("sll", "0110011");
-            put("slli","0010011");
-            put("srl", "0110011");
-            put("srli","0010011");
-            put("and", "0110011");
-            put("andi","0010011");
-            put("or",  "0110011");
-            put("ori", "0010011");
-            put("xor", "0110011");
-            put("xori","0010011");
-            put("beq", "1100011");
-            put("bne", "1100011");
-            put("blt", "1100011");
-            put("bge", "1100011");
+        instruction_opcode_map = new HashMap<String, int[]>() {{
+            put("lw",  new int[] {0,0,0,0,0,1,1});
+            put("sw",  new int[] {0,1,0,0,0,1,1});
+            put("add", new int[] {0,1,1,0,0,1,1});
+            put("addi",new int[] {0,0,1,0,0,1,1});
+            put("slt", new int[] {0,1,1,0,0,1,1});
+            put("slti",new int[] {0,0,1,0,0,1,1});
+            put("sll", new int[] {0,1,1,0,0,1,1});
+            put("slli",new int[] {0,0,1,0,0,1,1});
+            put("srl", new int[] {0,1,1,0,0,1,1});
+            put("srli",new int[] {0,0,1,0,0,1,1});
+            put("and", new int[] {0,1,1,0,0,1,1});
+            put("andi",new int[] {0,0,1,0,0,1,1});
+            put("or",  new int[] {0,1,1,0,0,1,1});
+            put("ori", new int[] {0,0,1,0,0,1,1});
+            put("xor", new int[] {0,1,1,0,0,1,1});
+            put("xori",new int[] {0,0,1,0,0,1,1});
+            put("beq", new int[] {1,1,0,0,0,1,1});
+            put("bne", new int[] {1,1,0,0,0,1,1});
+            put("blt", new int[] {1,1,0,0,0,1,1});
+            put("bge", new int[] {1,1,0,0,0,1,1});
+        }};
+//        instruction_opcode_map = new HashMap<S tring, String>() {{
+//            put("lw",  "0000011");
+//            put("sw",  "0100011");
+//            put("add", "0110011");
+//            put("addi","0010011");
+//            put("slt", "0110011");
+//            put("slti","0010011");
+//            put("sll", "0110011");
+//            put("slli","0010011");
+//            put("srl", "0110011");
+//            put("srli","0010011");
+//            put("and", "0110011");
+//            put("andi","0010011");
+//            put("or",  "0110011");
+//            put("ori", "0010011");
+//            put("xor", "0110011");
+//            put("xori","0010011");
+//            put("beq", "1100011");
+//            put("bne", "1100011");
+//            put("blt", "1100011");
+//            put("bge", "1100011");
+//        }};
+        //this is used when the instruction is invoking the alias name 
+        //which will point to a row number (the integer value)
+        register_alias_map = new HashMap<String, Integer>() {{ 
+            put("t0", 5);
+            put("t1", 6);
+            put("t2", 7);
+            put("s0", 8);
+            put("s1", 9);
+            put("a0", 10);
+            put("a1", 11);
+            put("a2", 12);
+            put("a3", 13);
+            put("a4", 14);
+            put("a5", 15);
+            put("a6", 16);
+            put("a7", 17);
+            put("s2", 18);
+            put("s3", 19);
+            put("s4", 20);
+            put("s5", 21);
+            put("s6", 22);
+            put("s7", 23);
+            put("s8", 24);
+            put("s9", 25);
+            put("s10", 26);
+            put("s11", 27);
+            put("t3", 28);
+            put("t4", 29);
+            put("t5", 30);
+            put("t6", 31);
         }};
     }
+    
+    
     
     //we should probably dissect the pipeline's execution as each function (etc. Decode = 1 function, PC = 1 function, 
     //so we can reflect the state of the simulator back to the GUI
     
-    public void parse_line(String line, int line_number)
+    public void parse_line(String line, int line_number, JTable jTableRegister)
     {
         String[] parsed_line = line.split(" ");
      
@@ -66,13 +128,44 @@ public class Pipeline {
         //now we split by comma
         String[] params = params_full_string.split(",");
         
+        //get instruction first
+        int[] instruction_opcode = instruction_opcode_map.get(instruction);
+        if (instruction_opcode == null)
+        {
+            //error code
+        }
+        //get rd table value here
+//        int table_row;
+//        if (params[0].charAt(0) == 'x') //this will check if the name called starts with xN or its original register name (etc. t0, a1)
+//        {
+//            String rownum_string = Character.toString(params[0].charAt(1));
+//            table_row = Integer.parseInt(rownum_string);
+//        }
+//        else
+//        {
+//            table_row = register_alias_map.get(params[0]);
+//        }
+//        
+        int rd_table_row = GetRegisterTableRow(params[0]);
+        
+//        System.out.println(jTableRegister.getColumnCount());
+//        Object pre_rd_value = jTableRegister.getValueAt(table_row, 2);
+//        String rd_value = (pre_rd_value == null) ? "" : pre_rd_value.toString();
+        
+        //they are in bits but their value needs to be extracted first
+        int[] rd_binary = DecimalToBinary(Integer.toString(rd_table_row)); //5 bits // this is the IMM in the opcode location
+        int[] rs1_binary = new int[5]; //5 bits // 
+        int[] rs2_binary = new int[5]; //5 bits
+        
         switch(instruction.toLowerCase())
         {
             case "lw":
-                load_word(params[0], params[1]);
+                int rs1_table_row = GetRegisterTableRow(params[1]);
+                String hexa_value = GetHexaValueFromTableRow(rs1_table_row, jTableRegister);
+                rs1_binary = HexaToBinary(hexa_value);
                 break;
             case "sw":
-                store_word(params[0], params[1]);
+            //put all remaining instructions here
             default:
                 System.out.println("Invalid instruction at line number "+line_number);
                 break;
@@ -82,13 +175,130 @@ public class Pipeline {
         
     }
     
+    public int GetRegisterTableRow(String register){
+        int table_row;
+        if (register.charAt(0) == 'x') //this will check if the name called starts with xN or its original register name (etc. t0, a1)
+        {
+            String rownum_string = Character.toString(register.charAt(1));
+            table_row = Integer.parseInt(rownum_string);
+        }
+        else
+        {
+            table_row = register_alias_map.get(register);
+        }
+        
+        return table_row;
+    }
+    
+    public String GetHexaValueFromTableRow(int table_row, JTable jTableRegister)
+    {
+        Object pre_rd_value = jTableRegister.getValueAt(table_row, 2);
+        String rd_value = (pre_rd_value == null) ? "" : pre_rd_value.toString();
+        
+        rd_value = rd_value.replace("0x", ""); //removes the radix
+        
+        return rd_value;
+    }
+    
+    public int HexToDecimal(String s)
+    {
+             String digits = "0123456789ABCDEF";
+             s = s.toUpperCase();
+             int val = 0;
+             for (int i = 0; i < s.length(); i++)
+             {
+                 char c = s.charAt(i);
+                 int d = digits.indexOf(c);
+                 val = 16*val + d;
+             }
+             return val;
+    }
+    
+    public int[] HexaToBinary(String hexa)
+    {
+        int[] binary_val = new int[5];
+        
+        if (hexa.isEmpty())
+        {
+            int i = 1;
+            int dec_num = HexToDecimal(hexa);
+
+            /* convert decimal to binary */        
+            while(dec_num != 0)
+            {
+                binary_val[i++] = dec_num%2;
+                dec_num = dec_num/2;
+            }
+
+            System.out.print("Equivalent Binary Number is: ");
+        }
+        return binary_val;
+    }
+    
+    public int[] DecimalToBinary(String decimal)
+    {
+        int[] binary_val = new int[5];
+
+        if (!decimal.isEmpty())
+        {
+            int i = 0;
+            int quot = Integer.parseInt(decimal);
+            while(quot != 0)
+            {
+                binary_val[i++] = quot%2;
+                quot = quot/2;
+            }
+            //zero pad after
+            System.out.println("Binary number is "+ binary_val);
+        }
+        
+        return binary_val;
+    }
+    
+    //IF
+    public void instruction_fetch(){
+        //IR <-- Mem[PC}
+        //NPC <-- PC + 4
+    }
+    
+    //ID
+    public void instruction_decode(){
+        //A <- Regs[IR 19...15]
+        //B <- Regs[IR 24...20]
+        //Imm <- {Sign_extend[IR 31..20] (immediate ALU) | sign_extend[IR 31..25, 11..7] (branch/store)}
+    }
+    
+    //EX
+    public void execute(){
+        //we can check invalid registers here
+        //ALU Operations
+    }
+    
+    //WB
+    public void write_back(){
+        //Regs[11..7] <- ALU Output
+    }
+    
+    
+    
     public void load_word(String rd, String rs1)
     {
         //TODO
         //we should check invalid registers here as well
+        
     }
     
     public void store_word(String rd, String rs1)
+    {
+        //TODO
+    }
+    
+    public void add_register(String rd, String rs1, String rs2)
+    {
+        //TODO
+    }
+    
+    public void add_immediate(String rd, String rs1, String imm)
     {
         //TODO
     }
