@@ -5,6 +5,9 @@
  */
 package csc612m.integrating.project;
 
+import java.util.HashMap;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author mark
@@ -67,7 +70,7 @@ public class MainFrame extends javax.swing.JFrame {
 
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        jTableRegister = new javax.swing.JTable();
         jTabbedPane2 = new javax.swing.JTabbedPane();
         jScrollPane4 = new javax.swing.JScrollPane();
         jEditorPane1 = new javax.swing.JEditorPane();
@@ -83,41 +86,41 @@ public class MainFrame extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        jTableRegister.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {"x0", "zero", null},
-                {"x1", "ra", null},
-                {"x2", "sp", null},
-                {"x3", "gp", null},
-                {"x4", "tp", null},
-                {"x5", "t0", null},
-                {"x6", "t1", null},
-                {"x7", "t2", null},
-                {"x8", "s0", null},
-                {"x9", "s1", null},
-                {"x10", "a0", null},
-                {"x11", "a1", null},
-                {"x12", "a2", null},
-                {"x13", "a3", null},
-                {"x14", "a4", null},
-                {"x15", "a5", null},
-                {"x16", "a6", null},
-                {"x17", "a7", null},
-                {"x18", "s2", null},
-                {"x19", "s3", null},
-                {"x20", "s4", null},
-                {"x21", "s5", null},
-                {"x22", "s6", null},
-                {"x23", "s7", null},
-                {"x24", "s8", null},
-                {"x25", "s9", null},
-                {"x26", "s10", null},
-                {"x27", "s11", null},
-                {"x28", "t3", null},
-                {"x29", "t4", null},
-                {"x30", "t5", null},
-                {"x31", "t6", null},
-                {null, "pc", null}
+                {"x0", "zero", "0x00000000"},
+                {"x1", "ra", "0x00000000"},
+                {"x2", "sp", "0x00000000"},
+                {"x3", "gp", "0x00000000"},
+                {"x4", "tp", "0x00000000"},
+                {"x5", "t0", "0x00000000"},
+                {"x6", "t1", "0x00000000"},
+                {"x7", "t2", "0x00000000"},
+                {"x8", "s0", "0x00000000"},
+                {"x9", "s1", "0x00000000"},
+                {"x10", "a0", "0x00000000"},
+                {"x11", "a1", "0x00000000"},
+                {"x12", "a2", "0x00000000"},
+                {"x13", "a3", "0x00000000"},
+                {"x14", "a4", "0x00000000"},
+                {"x15", "a5", "0x00000000"},
+                {"x16", "a6", "0x00000000"},
+                {"x17", "a7", "0x00000000"},
+                {"x18", "s2", "0x00000000"},
+                {"x19", "s3", "0x00000000"},
+                {"x20", "s4", "0x00000000"},
+                {"x21", "s5", "0x00000000"},
+                {"x22", "s6", "0x00000000"},
+                {"x23", "s7", "0x00000000"},
+                {"x24", "s8", "0x00000000"},
+                {"x25", "s9", "0x00000000"},
+                {"x26", "s10", "0x00000000"},
+                {"x27", "s11", "0x00000000"},
+                {"x28", "t3", "0x00000000"},
+                {"x29", "t4", "0x00000000"},
+                {"x30", "t5", "0x00000000"},
+                {"x31", "t6", "0x00000000"},
+                {null, "pc", "0x00000000"}
             },
             new String [] {
                 "Name", "Alias", "Value"
@@ -138,14 +141,14 @@ public class MainFrame extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        jTable1.setColumnSelectionAllowed(true);
-        jTable1.getTableHeader().setReorderingAllowed(false);
-        jScrollPane2.setViewportView(jTable1);
-        jTable1.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        if (jTable1.getColumnModel().getColumnCount() > 0) {
-            jTable1.getColumnModel().getColumn(0).setResizable(false);
-            jTable1.getColumnModel().getColumn(1).setResizable(false);
-            jTable1.getColumnModel().getColumn(2).setResizable(false);
+        jTableRegister.setColumnSelectionAllowed(true);
+        jTableRegister.getTableHeader().setReorderingAllowed(false);
+        jScrollPane2.setViewportView(jTableRegister);
+        jTableRegister.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        if (jTableRegister.getColumnModel().getColumnCount() > 0) {
+            jTableRegister.getColumnModel().getColumn(0).setResizable(false);
+            jTableRegister.getColumnModel().getColumn(1).setResizable(false);
+            jTableRegister.getColumnModel().getColumn(2).setResizable(false);
         }
 
         jTabbedPane1.addTab("Registers", jScrollPane2);
@@ -245,8 +248,8 @@ public class MainFrame extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jScrollPane5)))
-                .addGap(53, 53, 53)
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 239, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 286, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -269,6 +272,10 @@ public class MainFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+        /**
+         * This methods loads all the instruction lines in memory, and also checks for errors
+         * @param evt 
+         */
     private void jBtnAssembleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnAssembleActionPerformed
         // TODO add your handling code here:
         lines = jEditorPane1.getText().split("\n");
@@ -291,6 +298,10 @@ public class MainFrame extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_jBtnNextLineActionPerformed
 
+    /**
+     * To be removed
+     * @param evt 
+     */
     private void jBtnPrevLineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnPrevLineActionPerformed
         // TODO add your handling code here:
         if (current_line < 0)
@@ -357,7 +368,7 @@ public class MainFrame extends javax.swing.JFrame {
     {
         //parse or read line here
         System.out.println(lines[current_line]);
-        pipeline.parse_line(lines[current_line], current_line);
+        pipeline.parse_line(lines[current_line], current_line, jTableRegister);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -373,8 +384,8 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTabbedPane jTabbedPane2;
-    private javax.swing.JTable jTable1;
     private javax.swing.JTable jTable2;
+    private javax.swing.JTable jTableRegister;
     private javax.swing.JTextPane jTextPane2;
     // End of variables declaration//GEN-END:variables
 }
