@@ -167,7 +167,41 @@
                       <Data value="t6"/>
                       <Data value="pc"/>
                     </Column>
-                    <Column editable="true" title="Value" type="java.lang.String"/>
+                    <Column editable="true" title="Value" type="java.lang.String">
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                      <Data value="0x00000000"/>
+                    </Column>
                   </Table>
                 </Property>
                 <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
