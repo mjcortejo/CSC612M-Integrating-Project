@@ -5,6 +5,7 @@
  */
 package csc612m.integrating.project;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.swing.JTable;
@@ -21,7 +22,7 @@ public class Pipeline {
     
     HashMap<String, int[]> instruction_opcode_map;
     HashMap<String, Integer> register_alias_map;
-    int[] binary_opcode = new int[32];    
+    int[] binary_opcode = new int[32];
     
     public Pipeline()
     {
@@ -134,18 +135,7 @@ public class Pipeline {
         {
             //error code
         }
-        //get rd table value here
-//        int table_row;
-//        if (params[0].charAt(0) == 'x') //this will check if the name called starts with xN or its original register name (etc. t0, a1)
-//        {
-//            String rownum_string = Character.toString(params[0].charAt(1));
-//            table_row = Integer.parseInt(rownum_string);
-//        }
-//        else
-//        {
-//            table_row = register_alias_map.get(params[0]);
-//        }
-//        
+
         int rd_table_row = GetRegisterTableRow(params[0]);
         
 //        System.out.println(jTableRegister.getColumnCount());
@@ -163,8 +153,12 @@ public class Pipeline {
                 int rs1_table_row = GetRegisterTableRow(params[1]);
                 String hexa_value = GetHexaValueFromTableRow(rs1_table_row, jTableRegister);
                 rs1_binary = HexaToBinary(hexa_value);
+                binary_opcode = AddInstructionBinaryToOpcode(binary_opcode, instruction_opcode);
+                binary_opcode = AddIMMBinaryToOpcode(binary_opcode, rd_binary);
+                binary_opcode = AddRS1BinaryToOpcode(binary_opcode, rs1_binary);
+                System.out.println(BinaryToHex(binary_opcode));
                 break;
-            case "sw":
+            case "add":
             //put all remaining instructions here
             default:
                 System.out.println("Invalid instruction at line number "+line_number);
@@ -173,6 +167,36 @@ public class Pipeline {
         
         //check if the params are correct
         
+    }
+    
+    public int[] AddInstructionBinaryToOpcode(int[] opcode_to_apply, int[] instruction_binary_opcode)
+    {
+        System.out.println("Instruction binary opcode length "+instruction_binary_opcode.length);
+        for (int i = 6, j = 0; i >= 0; i--,j++)
+        {
+            opcode_to_apply[31-i] = instruction_binary_opcode[j];
+        }
+        return opcode_to_apply;
+    }
+    
+    public int[] AddIMMBinaryToOpcode(int[] opcode_to_apply, int[] imm_binary_opcode)
+    {
+        System.out.println("imm binary opcode length "+imm_binary_opcode.length);
+        for (int i = 11, j = 0; i >= 7; i--, j++)
+        {
+            opcode_to_apply[31-i] = imm_binary_opcode[j];
+        }
+        return opcode_to_apply;
+    }
+    
+    public int[] AddRS1BinaryToOpcode(int[] opcode_to_apply, int[] rs1_binary_opcode)
+    {
+        System.out.println("rs1 binary opcode length "+rs1_binary_opcode.length);
+        for (int i = 19, j = 0; i >= 15; i--,j++)
+        {
+            opcode_to_apply[31-i] = rs1_binary_opcode[j];
+        }
+        return opcode_to_apply;
     }
     
     public int GetRegisterTableRow(String register){
@@ -253,6 +277,29 @@ public class Pipeline {
         }
         
         return binary_val;
+    }
+    
+    public String BinaryToHex(int[] binary)
+    {
+        String bin_string = "";
+        for (int bin : binary)
+        {
+            bin_string += bin;
+        }
+//        for (int i = binary.length - 1; i >= 0; i--)
+//        {
+//            bin_string += binary[i];
+//        }
+//        System.out.println(bin_string);
+        BigInteger b = new BigInteger(bin_string, 2);
+        String converted_hex = b.toString(16);
+        String zero_pads = "";
+        
+        for (int i = 0; i <= 7 - converted_hex.length(); i++) // 8 bits - length of actual hex
+        {
+            zero_pads += "0";
+        }
+        return zero_pads + converted_hex;
     }
     
     //IF
