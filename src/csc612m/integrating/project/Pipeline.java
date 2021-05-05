@@ -21,6 +21,7 @@ public class Pipeline {
     
     
     HashMap<String, int[]> instruction_opcode_map;
+    HashMap<String, int[]> funct3_opcode_map;
     HashMap<String, Integer> register_alias_map;
     int[] binary_opcode = new int[32];
     
@@ -48,28 +49,29 @@ public class Pipeline {
             put("blt", new int[] {1,1,0,0,0,1,1});
             put("bge", new int[] {1,1,0,0,0,1,1});
         }};
-//        instruction_opcode_map = new HashMap<S tring, String>() {{
-//            put("lw",  "0000011");
-//            put("sw",  "0100011");
-//            put("add", "0110011");
-//            put("addi","0010011");
-//            put("slt", "0110011");
-//            put("slti","0010011");
-//            put("sll", "0110011");
-//            put("slli","0010011");
-//            put("srl", "0110011");
-//            put("srli","0010011");
-//            put("and", "0110011");
-//            put("andi","0010011");
-//            put("or",  "0110011");
-//            put("ori", "0010011");
-//            put("xor", "0110011");
-//            put("xori","0010011");
-//            put("beq", "1100011");
-//            put("bne", "1100011");
-//            put("blt", "1100011");
-//            put("bge", "1100011");
-//        }};
+        
+        funct3_opcode_map = new HashMap<String, int[]>(){{
+            put("lw",  new int[] {0,1,0});
+            put("sw",  new int[] {0,1,0});
+            put("add", new int[] {0,0,0});
+            put("addi",new int[] {0,0,0});
+            put("slt", new int[] {0,1,0});
+            put("slti",new int[] {0,1,0});
+            put("sll", new int[] {0,0,1});
+            put("slli",new int[] {0,0,1});
+            put("srl", new int[] {1,0,1});
+            put("srli",new int[] {1,0,1});
+            put("and", new int[] {1,1,1});
+            put("andi",new int[] {1,1,1});
+            put("or",  new int[] {1,1,0});
+            put("ori", new int[] {1,1,0});
+            put("xor", new int[] {1,0,0});
+            put("xori",new int[] {1,0,0});
+            put("beq", new int[] {0,0,0});
+            put("bne", new int[] {0,0,1});
+            put("blt", new int[] {1,0,0});
+            put("bge", new int[] {1,0,1});
+        }};
         //this is used when the instruction is invoking the alias name 
         //which will point to a row number (the integer value)
         register_alias_map = new HashMap<String, Integer>() {{ 
