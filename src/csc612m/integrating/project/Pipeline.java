@@ -133,6 +133,7 @@ public class Pipeline {
         
         //get instruction first
         int[] instruction_opcode = instruction_opcode_map.get(instruction);
+        int[] funct3_opcode = funct3_opcode_map.get(instruction);
         if (instruction_opcode == null)
         {
             //error code
@@ -157,6 +158,7 @@ public class Pipeline {
                 rs1_binary = HexaToBinary(hexa_value);
                 binary_opcode = AddInstructionBinaryToOpcode(binary_opcode, instruction_opcode);
                 binary_opcode = AddIMMBinaryToOpcode(binary_opcode, rd_binary);
+                binary_opcode = AddFunct3BinaryToOpcode(binary_opcode, funct3_opcode);
                 binary_opcode = AddRS1BinaryToOpcode(binary_opcode, rs1_binary);
                 System.out.println(BinaryToHex(binary_opcode));
                 break;
@@ -187,6 +189,16 @@ public class Pipeline {
         for (int i = 11, j = 0; i >= 7; i--, j++)
         {
             opcode_to_apply[31-i] = imm_binary_opcode[j];
+        }
+        return opcode_to_apply;
+    }
+    
+    public int[] AddFunct3BinaryToOpcode(int[] opcode_to_apply, int[] funct3_binary_opcode)
+    {
+        System.out.println("funct3 binary opcode length "+funct3_binary_opcode.length);
+        for (int i = 14, j = 0; i >= 12; i--, j++)
+        {
+            opcode_to_apply[31-i] = funct3_binary_opcode[j];
         }
         return opcode_to_apply;
     }
