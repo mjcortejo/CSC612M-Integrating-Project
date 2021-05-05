@@ -82,7 +82,7 @@ public class MainFrame extends javax.swing.JFrame {
         jBtnAssemble = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jScrollPane5 = new javax.swing.JScrollPane();
-        jTextPane2 = new javax.swing.JTextPane();
+        jTextOutput = new javax.swing.JTextPane();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -223,7 +223,7 @@ public class MainFrame extends javax.swing.JFrame {
 
         jLabel1.setText("Output");
 
-        jScrollPane5.setViewportView(jTextPane2);
+        jScrollPane5.setViewportView(jTextOutput);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -386,6 +386,6 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JTabbedPane jTabbedPane2;
     private javax.swing.JTable jTable2;
     private javax.swing.JTable jTableRegister;
-    private javax.swing.JTextPane jTextPane2;
+    private javax.swing.JTextPane jTextOutput;
     // End of variables declaration//GEN-END:variables
 }
