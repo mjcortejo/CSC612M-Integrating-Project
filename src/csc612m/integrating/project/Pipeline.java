@@ -136,19 +136,11 @@ public class Pipeline {
             //get instruction first
             int[] instruction_opcode = instruction_opcode_map.get(instruction);
             int[] funct3_opcode = funct3_opcode_map.get(instruction);
-            if (instruction_opcode == null)
-            {
-                //error code
-            }
 
             int rd_table_row = GetRegisterTableRow(params[0]);
             int rs1_table_row;
             int rs2_table_row;
             String hexa_value;
-
-    //        System.out.println(jTableRegister.getColumnCount());
-    //        Object pre_rd_value = jTableRegister.getValueAt(table_row, 2);
-    //        String rd_value = (pre_rd_value == null) ? "" : pre_rd_value.toString();
 
             //they are in bits but their value needs to be extracted first
             int[] rd_binary = DecimalToBinary(Integer.toString(rd_table_row)); //5 bits // this is the IMM in the opcode location
@@ -182,8 +174,7 @@ public class Pipeline {
                     System.out.println(BinaryToHex(binary_opcode));
                     break;
                 default: //error check
-                    System.out.println("Invalid instruction "+instruction);
-                    break;
+                    throw new Exception("Invalid instruction "+instruction);
             }
         }
         catch(Exception e)
@@ -308,7 +299,6 @@ public class Pipeline {
                 dec_num = dec_num/2;
             }
 
-            System.out.print("Equivalent Binary Number is: ");
         }
         return binary_val;
     }
@@ -327,7 +317,6 @@ public class Pipeline {
                 quot = quot/2;
             }
             //zero pad after
-            System.out.println("Binary number is "+ binary_val);
         }
         
         return binary_val;
@@ -340,6 +329,7 @@ public class Pipeline {
         {
             bin_string += bin;
         }
+        System.out.println("Full binary opcode: " + bin_string);
 //        for (int i = binary.length - 1; i >= 0; i--)
 //        {
 //            bin_string += binary[i];
