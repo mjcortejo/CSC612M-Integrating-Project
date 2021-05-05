@@ -140,6 +140,9 @@ public class Pipeline {
         }
 
         int rd_table_row = GetRegisterTableRow(params[0]);
+        int rs1_table_row;
+        int rs2_table_row;
+        String hexa_value;
         
 //        System.out.println(jTableRegister.getColumnCount());
 //        Object pre_rd_value = jTableRegister.getValueAt(table_row, 2);
@@ -153,8 +156,8 @@ public class Pipeline {
         switch(instruction.toLowerCase())
         {
             case "lw":
-                int rs1_table_row = GetRegisterTableRow(params[1]);
-                String hexa_value = GetHexaValueFromTableRow(rs1_table_row, jTableRegister);
+                rs1_table_row = GetRegisterTableRow(params[1]);
+                hexa_value = GetHexaValueFromTableRow(rs1_table_row, jTableRegister);
                 rs1_binary = HexaToBinary(hexa_value);
                 binary_opcode = AddInstructionBinaryToOpcode(binary_opcode, instruction_opcode);
                 binary_opcode = AddIMMBinaryToOpcode(binary_opcode, rd_binary);
@@ -163,7 +166,19 @@ public class Pipeline {
                 System.out.println(BinaryToHex(binary_opcode));
                 break;
             case "add":
-            //put all remaining instructions here
+                rs1_table_row = GetRegisterTableRow(params[1]);
+                rs2_table_row = GetRegisterTableRow(params[2]);
+                hexa_value = GetHexaValueFromTableRow(rs1_table_row, jTableRegister);
+                rs1_binary = HexaToBinary(hexa_value);
+                hexa_value = GetHexaValueFromTableRow(rs2_table_row, jTableRegister);
+                rs2_binary = HexaToBinary(hexa_value);
+                binary_opcode = AddInstructionBinaryToOpcode(binary_opcode, instruction_opcode);
+                binary_opcode = AddIMMBinaryToOpcode(binary_opcode, rd_binary);
+                binary_opcode = AddFunct3BinaryToOpcode(binary_opcode, funct3_opcode);
+                binary_opcode = AddRS1BinaryToOpcode(binary_opcode, rs1_binary);
+                binary_opcode = AddRS2BinaryToOpcode(binary_opcode, rs2_binary);
+                System.out.println(BinaryToHex(binary_opcode));
+                break;
             default:
                 System.out.println("Invalid instruction at line number "+line_number);
                 break;
@@ -209,6 +224,16 @@ public class Pipeline {
         for (int i = 19, j = 0; i >= 15; i--,j++)
         {
             opcode_to_apply[31-i] = rs1_binary_opcode[j];
+        }
+        return opcode_to_apply;
+    }
+    
+    public int[] AddRS2BinaryToOpcode(int[] opcode_to_apply, int[] rs2_binary_opcode)
+    {
+        System.out.println("rs2 binary opcode length "+rs2_binary_opcode.length);
+        for (int i = 24, j = 0; i >= 20; i--,j++)
+        {
+            opcode_to_apply[31-i] = rs2_binary_opcode[j];
         }
         return opcode_to_apply;
     }
