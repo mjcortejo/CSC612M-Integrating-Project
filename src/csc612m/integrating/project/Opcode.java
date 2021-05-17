@@ -18,7 +18,7 @@ public class Opcode {
     HashMap<String, int[]> instruction_opcode_map;
     HashMap<String, int[]> funct3_opcode_map;
     HashMap<String, Integer> register_alias_map;
-    int[] binary_opcode = new int[32];
+    int[] binary_opcode;
     
     public Opcode()
     {
@@ -106,6 +106,7 @@ public class Opcode {
     public String GenerateOpcode(String line, JTable jTableRegister)
     {
         String full_opcode = "";
+        binary_opcode = new int[32];
         try
         {
             String[] parsed_line = line.split(" ");
@@ -132,14 +133,12 @@ public class Opcode {
             int[] funct3_opcode = funct3_opcode_map.get(instruction);
 
             int rd_table_row = GetRegisterTableRow(params[0]);
-//            int rd_table_row;
             int rs1_table_row;
             int rs2_table_row;
             String hexa_value;
 
             //they are in bits but their value needs to be extracted first
             int[] rd_binary = Convert.DecimalToBinary(Integer.toString(rd_table_row)); //5 bits // this is the IMM in the opcode location
-//            int[] rd_binary = new int[5];
             int[] rs1_binary = new int[5]; //5 bits // 
             int[] rs2_binary = new int[5]; //5 bits
             
@@ -154,6 +153,8 @@ public class Opcode {
                     AddBinaryToOpcode(binary_opcode, rd_binary, 11, 7);
                     AddBinaryToOpcode(binary_opcode, funct3_opcode, 14, 12);
                     AddBinaryToOpcode(binary_opcode, rs1_binary, 19, 15);
+                    
+                    binary_opcode = InvertBinary(binary_opcode);
                     
                     full_opcode = Convert.BinaryToHex(binary_opcode);
                     break;
@@ -175,6 +176,8 @@ public class Opcode {
                     AddBinaryToOpcode(binary_opcode, rs1_binary, 19, 15);
                     AddBinaryToOpcode(binary_opcode, rs2_binary, 24, 20);
                     
+                    binary_opcode = InvertBinary(binary_opcode);
+                    
                     full_opcode = Convert.BinaryToHex(binary_opcode);
                     break;
                 case "add":
@@ -191,6 +194,8 @@ public class Opcode {
                     AddBinaryToOpcode(binary_opcode, rs1_binary, 19, 15);
                     AddBinaryToOpcode(binary_opcode, rs2_binary, 24, 20);
                     
+                    binary_opcode = InvertBinary(binary_opcode);
+                    
                     full_opcode = Convert.BinaryToHex(binary_opcode);
                     break;
                 case "addi":
@@ -203,6 +208,8 @@ public class Opcode {
                     AddBinaryToOpcode(binary_opcode, rs1_binary, 19, 15);
                     AddBinaryToOpcode(binary_opcode, imm_binary, 31, 20);
                     
+                    binary_opcode = InvertBinary(binary_opcode);
+                    
                     full_opcode = Convert.BinaryToHex(binary_opcode);
                     break;
                 default: //error check
@@ -214,9 +221,17 @@ public class Opcode {
         {
             System.out.println(e);
         }
+        PrintBinaryOpcode(binary_opcode);
         return full_opcode;
     }
     
+    /***
+     * Update the binary opcode range using the upper and lower bound of the binary list
+     * @param opcode_to_apply
+     * @param binary_opcode
+     * @param upper_bound
+     * @param lower_bound 
+     */
     public static void AddBinaryToOpcode(int[] opcode_to_apply, int[] binary_opcode, int upper_bound, int lower_bound)
     {
         for (int i = upper_bound, j = 0; i >= lower_bound; i--,j++)
@@ -225,101 +240,24 @@ public class Opcode {
         }
     }
     
-    /***
-     * Updates the Opcode Range 6 - 0
-     * @param opcode_to_apply
-     * @param instruction_binary_opcode
-     * @return 
-     */
-    public static void AddInstructionBinaryToOpcode(int[] opcode_to_apply, int[] instruction_binary_opcode)
+    public static int[] InvertBinary(int[] binary_to_invert)
     {
-        for (int i = 6, j = 0; i >= 0; i--,j++)
+        int[] inverted_bin = new int[binary_to_invert.length];
+        for (int i = binary_to_invert.length - 1, j = 0; i >= 0; i--, j++)
         {
-            opcode_to_apply[31-i] = instruction_binary_opcode[j];
+            inverted_bin[j] = binary_to_invert[i];
         }
+        return inverted_bin;
     }
     
-    /***
-     * Updates the opcode range 11 - 7
-     * @param opcode_to_apply
-     * @param rd_binary_opcode
-     * @return 
-     */
-    public static void AddRDBinaryToOpcode(int[] opcode_to_apply, int[] rd_binary_opcode)
+    public static void PrintBinaryOpcode(int[] opcode_to_print)
     {
-        for (int i = 11, j = 0; i >= 7; i--, j++)
+        String bin = "";
+        for (int i = opcode_to_print.length - 1; i >= 0 ; i--)
         {
-            opcode_to_apply[31-i] = rd_binary_opcode[j];
+            bin = opcode_to_print[i] + bin;
         }
-    }
-    
-    /***
-     * Updates the opcode Range 14 - 12
-     * @param opcode_to_apply
-     * @param funct3_binary_opcode
-     * @return 
-     */
-    public static void AddFunct3BinaryToOpcode(int[] opcode_to_apply, int[] funct3_binary_opcode)
-    {
-        for (int i = 14, j = 0; i >= 12; i--, j++)
-        {
-            opcode_to_apply[31-i] = funct3_binary_opcode[j];
-        }
-    }
-    
-    /***
-     * Updates the opcode range 19 - 15
-     * @param opcode_to_apply
-     * @param rs1_binary_opcode
-     * @return 
-     */
-    public static void AddRS1BinaryToOpcode(int[] opcode_to_apply, int[] rs1_binary_opcode)
-    {
-        for (int i = 19, j = 0; i >= 15; i--,j++)
-        {
-            opcode_to_apply[31-i] = rs1_binary_opcode[j];
-        }
-    }
-    
-    /***
-     * Updates the opcode range 24 - 20
-     * @param opcode_to_apply
-     * @param rs2_binary_opcode
-     * @return 
-     */
-    public static void AddRS2BinaryToOpcode(int[] opcode_to_apply, int[] rs2_binary_opcode)
-    {
-        for (int i = 24, j = 0; i >= 20; i--,j++)
-        {
-            opcode_to_apply[31-i] = rs2_binary_opcode[j];
-        }
-    }
-    
-    /***
-     * Updates the opcode range 31 - 25
-     * @param opcode_to_apply
-     * @param imm_binary_opcode 
-     */
-    
-    public static void AddIMMBinaryToOpcode(int[] opcode_to_apply, int[] imm_binary_opcode)
-    {
-        for (int i = 31, j = 0; i >= 25; i--, j++)
-        {
-            opcode_to_apply[31-i] = imm_binary_opcode[j];
-        }
-    }
-    
-    /***
-     * Updates the opcode range 31 - 20
-     * @param opcode_to_apply
-     * @param imm_binary_opcode 
-     */
-    public static void AddIMM12BitsBinaryToOpcode(int[] opcode_to_apply, int[] imm_binary_opcode)
-    {
-        for (int i = 31, j = 0; i >= 20; i--, j++)
-        {
-            opcode_to_apply[31-i] = imm_binary_opcode[j];
-        }
+        System.out.println(bin);
     }
     
     public int GetRegisterTableRow(String register) throws Exception{
