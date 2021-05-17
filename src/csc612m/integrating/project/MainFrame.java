@@ -22,6 +22,7 @@ public class MainFrame extends javax.swing.JFrame {
      */
     Pipeline pipeline;
     DefaultTableModel memory_table;
+    DefaultTableModel program_table;
     HashMap<String, Integer> register_alias_map;
     
     public MainFrame() {
@@ -57,8 +58,10 @@ public class MainFrame extends javax.swing.JFrame {
             put("t5", 30);
             put("t6", 31);
         }};
-        
-        System.out.println("table has " +jTableRegister.getRowCount() + "rows");
+        PopulateDataSegmentAddress();
+    }
+    public void PopulateDataSegmentAddress()
+    {
         this.memory_table = (DefaultTableModel)jTableMemory.getModel();
         for (int i = 0; i < 2048; i+=32)
         {
@@ -66,15 +69,13 @@ public class MainFrame extends javax.swing.JFrame {
             int[] decimal_to_binary = Convert.IntDecimalToBinary(i, 12); //12 bits == 2048 (according to specs)
             String binary_to_hex = Convert.BinaryToHex(decimal_to_binary);
             System.out.println(binary_to_hex);
-            cell.add(binary_to_hex);
+            cell.add("0x"+binary_to_hex);
             for (int j = 4; j < 32; j+=4) //add half bytes
             {
                 binary_to_hex = Convert.BinaryToHex(Convert.IntDecimalToBinary(0, 12));
                 System.out.println(binary_to_hex);
                 cell.add(binary_to_hex);
             }
-//            String[] cell_array = new String[cell.size()];
-//            cell_array = cell.toArray(cell_array);
             this.memory_table.addRow(cell);
         }
     }
@@ -98,7 +99,7 @@ public class MainFrame extends javax.swing.JFrame {
         jScrollPane3 = new javax.swing.JScrollPane();
         jTableMemory = new javax.swing.JTable();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        jTableProgram = new javax.swing.JTable();
         jBtnRun = new javax.swing.JButton();
         jBtnNextLine = new javax.swing.JButton();
         jBtnPrevLine = new javax.swing.JButton();
@@ -218,9 +219,9 @@ public class MainFrame extends javax.swing.JFrame {
 
         jTabbedPane3.addTab("Memory", jScrollPane3);
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        jTableProgram.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null}
+
             },
             new String [] {
                 "Address", "Opcode", "Instruction"
@@ -234,9 +235,9 @@ public class MainFrame extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        jScrollPane1.setViewportView(jTable1);
-        if (jTable1.getColumnModel().getColumnCount() > 0) {
-            jTable1.getColumnModel().getColumn(0).setPreferredWidth(1);
+        jScrollPane1.setViewportView(jTableProgram);
+        if (jTableProgram.getColumnModel().getColumnCount() > 0) {
+            jTableProgram.getColumnModel().getColumn(0).setPreferredWidth(1);
         }
 
         jTabbedPane3.addTab("Program", jScrollPane1);
@@ -329,10 +330,26 @@ public class MainFrame extends javax.swing.JFrame {
         lines = jEditorPane1.getText().split("\n");
         lines_length = lines.length;
         current_line = 0;
+        PopulateProgramTextSegmentAddress();
         System.out.println("COMPILED");
         System.out.println("Got "+lines_length + "lines");
     }//GEN-LAST:event_jBtnAssembleActionPerformed
 
+    public void PopulateProgramTextSegmentAddress()
+    {
+        lines = jEditorPane1.getText().split("\n");
+        this.program_table = (DefaultTableModel)jTableProgram.getModel();
+        for (int i = 0, j = 0; i < 4096; i+=4, j++)
+        {
+            Vector cell = new Vector(); //this stores the value of each 'cell' per address row
+            int[] decimal_to_binary = Convert.IntDecimalToBinary(i, 13); //13 bits == 4096 (according to specs)
+            String binary_to_hex = Convert.BinaryToHex(decimal_to_binary);
+            cell.add("0x"+binary_to_hex);
+            cell.add(lines[j]);
+            this.program_table.addRow(cell);
+        }
+      
+    }
     private void jBtnNextLineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnNextLineActionPerformed
         // TODO add your handling code here:
         if (current_line > lines_length)
@@ -434,8 +451,8 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTabbedPane jTabbedPane2;
     private javax.swing.JTabbedPane jTabbedPane3;
-    private javax.swing.JTable jTable1;
     private javax.swing.JTable jTableMemory;
+    private javax.swing.JTable jTableProgram;
     private javax.swing.JTable jTableRegister;
     private javax.swing.JTextPane jTextOutput;
     // End of variables declaration//GEN-END:variables
