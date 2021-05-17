@@ -33,12 +33,28 @@ public class Convert {
     }
     
     /***
-     * Converts string Hexadecimal to int list Binary 
+     * Converts string Hexadecimal to int list Binary without num_bits parameter
      * @param hexa
      * @return 
      */
     public static int[] HexaToBinary(String hexa)
     {
+        return HexaToBinary(hexa, 0);
+    }
+    
+    /***
+     * Converts string Hexadecimal to int list Binary
+     * Accepts number of bits parameters if bits >5
+     * @param hexa
+     * @param num_bits
+     * @return 
+     */
+    public static int[] HexaToBinary(String hexa, int num_bits)
+    {
+        if (num_bits == 0)
+        {
+            num_bits = 5;
+        }
         int[] binary_val = new int[5];
         
         if (hexa.isEmpty())
@@ -64,7 +80,24 @@ public class Convert {
      */
     public static int[] DecimalToBinary(String decimal)
     {
-        int[] binary_val = new int[5];
+        return DecimalToBinary(decimal, 0);
+    }
+    
+    /***
+     * Converts string Decimal to int list Binary
+     * Accepts num_bits parameter for bits >5
+     * @param decimal
+     * @param num_bits
+     * @return 
+     */
+    public static int[] DecimalToBinary(String decimal, int num_bits)
+    {
+        if(num_bits == 0)
+        {
+            num_bits = 5;
+        }
+        
+        int[] binary_val = new int[num_bits];
 
         if (!decimal.isEmpty())
         {
