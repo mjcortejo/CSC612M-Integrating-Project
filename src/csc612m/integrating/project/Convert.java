@@ -97,7 +97,6 @@ public class Convert {
         {
             bin_string = bin + bin_string; //this properly reverses the binary string
         }
-        System.out.println("Full binary opcode: " + bin_string);
         BigInteger b = new BigInteger(bin_string, 2);
         String converted_hex = b.toString(16);
         String zero_pads = "";
@@ -108,9 +107,4 @@ public class Convert {
         }
         return zero_pads + converted_hex;
     }
-
-    static void HexToDecimal() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
 }
