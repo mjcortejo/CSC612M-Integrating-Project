@@ -5,7 +5,10 @@
  */
 package csc612m.integrating.project;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Vector;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -18,7 +21,7 @@ public class MainFrame extends javax.swing.JFrame {
      * Creates new form MainFrame
      */
     Pipeline pipeline;
-    DefaultTableModel register_table;
+    DefaultTableModel memory_table;
     HashMap<String, Integer> register_alias_map;
     
     public MainFrame() {
@@ -56,7 +59,24 @@ public class MainFrame extends javax.swing.JFrame {
         }};
         
         System.out.println("table has " +jTableRegister.getRowCount() + "rows");
-        this.register_table = (DefaultTableModel)jTableRegister.getModel();
+        this.memory_table = (DefaultTableModel)jTableMemory.getModel();
+        for (int i = 0; i < 2048; i+=32)
+        {
+            Vector cell = new Vector(); //this stores the value of each 'cell' per address row
+            int[] decimal_to_binary = Convert.IntDecimalToBinary(i, 12); //12 bits == 2048 (according to specs)
+            String binary_to_hex = Convert.BinaryToHex(decimal_to_binary);
+            System.out.println(binary_to_hex);
+            cell.add(binary_to_hex);
+            for (int j = 4; j < 32; j+=4) //add half bytes
+            {
+                binary_to_hex = Convert.BinaryToHex(Convert.IntDecimalToBinary(0, 12));
+                System.out.println(binary_to_hex);
+                cell.add(binary_to_hex);
+            }
+//            String[] cell_array = new String[cell.size()];
+//            cell_array = cell.toArray(cell_array);
+            this.memory_table.addRow(cell);
+        }
     }
 
     /**
@@ -74,8 +94,11 @@ public class MainFrame extends javax.swing.JFrame {
         jTabbedPane2 = new javax.swing.JTabbedPane();
         jScrollPane4 = new javax.swing.JScrollPane();
         jEditorPane1 = new javax.swing.JEditorPane();
+        jTabbedPane3 = new javax.swing.JTabbedPane();
         jScrollPane3 = new javax.swing.JScrollPane();
-        jTable2 = new javax.swing.JTable();
+        jTableMemory = new javax.swing.JTable();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTable1 = new javax.swing.JTable();
         jBtnRun = new javax.swing.JButton();
         jBtnNextLine = new javax.swing.JButton();
         jBtnPrevLine = new javax.swing.JButton();
@@ -157,19 +180,19 @@ public class MainFrame extends javax.swing.JFrame {
 
         jTabbedPane2.addTab("Source Code", jScrollPane4);
 
-        jTable2.setModel(new javax.swing.table.DefaultTableModel(
+        jTableMemory.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null}
+
             },
             new String [] {
-                "Address", "Word", "Byte 0", "Byte 1", "Byte 2", "Byte 3"
+                "Address", "Value (+0)", "Value (+4)", "Value (+8)", "Value (+10)", "Value (+14)", "Value (+18)", "Value (+1c)"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
+                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, true, true, true, true
+                false, false, false, false, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -180,18 +203,45 @@ public class MainFrame extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        jTable2.getTableHeader().setReorderingAllowed(false);
-        jScrollPane3.setViewportView(jTable2);
-        if (jTable2.getColumnModel().getColumnCount() > 0) {
-            jTable2.getColumnModel().getColumn(0).setResizable(false);
-            jTable2.getColumnModel().getColumn(1).setResizable(false);
-            jTable2.getColumnModel().getColumn(2).setResizable(false);
-            jTable2.getColumnModel().getColumn(3).setResizable(false);
-            jTable2.getColumnModel().getColumn(4).setResizable(false);
-            jTable2.getColumnModel().getColumn(5).setResizable(false);
+        jTableMemory.getTableHeader().setReorderingAllowed(false);
+        jScrollPane3.setViewportView(jTableMemory);
+        if (jTableMemory.getColumnModel().getColumnCount() > 0) {
+            jTableMemory.getColumnModel().getColumn(0).setResizable(false);
+            jTableMemory.getColumnModel().getColumn(1).setResizable(false);
+            jTableMemory.getColumnModel().getColumn(2).setResizable(false);
+            jTableMemory.getColumnModel().getColumn(3).setResizable(false);
+            jTableMemory.getColumnModel().getColumn(4).setResizable(false);
+            jTableMemory.getColumnModel().getColumn(5).setResizable(false);
+            jTableMemory.getColumnModel().getColumn(6).setResizable(false);
+            jTableMemory.getColumnModel().getColumn(7).setResizable(false);
         }
 
-        jTabbedPane2.addTab("Memory", jScrollPane3);
+        jTabbedPane3.addTab("Memory", jScrollPane3);
+
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null}
+            },
+            new String [] {
+                "Address", "Opcode", "Instruction"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane1.setViewportView(jTable1);
+        if (jTable1.getColumnModel().getColumnCount() > 0) {
+            jTable1.getColumnModel().getColumn(0).setPreferredWidth(1);
+        }
+
+        jTabbedPane3.addTab("Program", jScrollPane1);
+
+        jTabbedPane2.addTab("Execution", jTabbedPane3);
 
         jBtnRun.setText("Run");
         jBtnRun.addActionListener(new java.awt.event.ActionListener() {
@@ -230,7 +280,10 @@ public class MainFrame extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel1))
                     .addComponent(jTabbedPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 1147, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(17, 17, 17)
@@ -242,18 +295,13 @@ public class MainFrame extends javax.swing.JFrame {
                                 .addComponent(jBtnRun)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jBtnNextLine))))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jLabel1))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jScrollPane5)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 286, Short.MAX_VALUE))
+                    .addComponent(jScrollPane5, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 1135, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 61, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 623, Short.MAX_VALUE)
+            .addComponent(jTabbedPane1)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jBtnAssemble)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -263,10 +311,10 @@ public class MainFrame extends javax.swing.JFrame {
                     .addComponent(jBtnPrevLine))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jTabbedPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 318, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addGap(18, 145, Short.MAX_VALUE)
                 .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane5))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
@@ -378,13 +426,16 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JButton jBtnRun;
     private javax.swing.JEditorPane jEditorPane1;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTabbedPane jTabbedPane2;
-    private javax.swing.JTable jTable2;
+    private javax.swing.JTabbedPane jTabbedPane3;
+    private javax.swing.JTable jTable1;
+    private javax.swing.JTable jTableMemory;
     private javax.swing.JTable jTableRegister;
     private javax.swing.JTextPane jTextOutput;
     // End of variables declaration//GEN-END:variables
