@@ -143,7 +143,7 @@ public class Pipeline {
             String hexa_value;
 
             //they are in bits but their value needs to be extracted first
-            int[] rd_binary = DecimalToBinary(Integer.toString(rd_table_row)); //5 bits // this is the IMM in the opcode location
+            int[] rd_binary = Convert.DecimalToBinary(Integer.toString(rd_table_row)); //5 bits // this is the IMM in the opcode location
             int[] rs1_binary = new int[5]; //5 bits // 
             int[] rs2_binary = new int[5]; //5 bits
             
@@ -152,26 +152,26 @@ public class Pipeline {
                 case "lw":
                     rs1_table_row = GetRegisterTableRow(params[1]);
                     hexa_value = GetHexaValueFromTableRow(rs1_table_row, jTableRegister);
-                    rs1_binary = HexaToBinary(hexa_value);
+                    rs1_binary = Convert.HexaToBinary(hexa_value);
                     binary_opcode = AddInstructionBinaryToOpcode(binary_opcode, instruction_opcode);
                     binary_opcode = AddIMMBinaryToOpcode(binary_opcode, rd_binary);
                     binary_opcode = AddFunct3BinaryToOpcode(binary_opcode, funct3_opcode);
                     binary_opcode = AddRS1BinaryToOpcode(binary_opcode, rs1_binary);
-                    System.out.println(BinaryToHex(binary_opcode));
+                    System.out.println(Convert.BinaryToHex(binary_opcode));
                     break;
                 case "add":
                     rs1_table_row = GetRegisterTableRow(params[1]);
                     rs2_table_row = GetRegisterTableRow(params[2]);
                     hexa_value = GetHexaValueFromTableRow(rs1_table_row, jTableRegister);
-                    rs1_binary = HexaToBinary(hexa_value);
+                    rs1_binary = Convert.HexaToBinary(hexa_value);
                     hexa_value = GetHexaValueFromTableRow(rs2_table_row, jTableRegister);
-                    rs2_binary = HexaToBinary(hexa_value);
+                    rs2_binary = Convert.HexaToBinary(hexa_value);
                     binary_opcode = AddInstructionBinaryToOpcode(binary_opcode, instruction_opcode);
                     binary_opcode = AddIMMBinaryToOpcode(binary_opcode, rd_binary);
                     binary_opcode = AddFunct3BinaryToOpcode(binary_opcode, funct3_opcode);
                     binary_opcode = AddRS1BinaryToOpcode(binary_opcode, rs1_binary);
                     binary_opcode = AddRS2BinaryToOpcode(binary_opcode, rs2_binary);
-                    System.out.println(BinaryToHex(binary_opcode));
+                    System.out.println(Convert.BinaryToHex(binary_opcode));
                     break;
                 default: //error check
                     throw new Exception("Invalid instruction "+instruction);
@@ -268,84 +268,6 @@ public class Pipeline {
         
         return rd_value;
     }
-    
-    public int HexToDecimal(String s)
-    {
-             String digits = "0123456789ABCDEF";
-             s = s.toUpperCase();
-             int val = 0;
-             for (int i = 0; i < s.length(); i++)
-             {
-                 char c = s.charAt(i);
-                 int d = digits.indexOf(c);
-                 val = 16*val + d;
-             }
-             return val;
-    }
-    
-    public int[] HexaToBinary(String hexa)
-    {
-        int[] binary_val = new int[5];
-        
-        if (hexa.isEmpty())
-        {
-            int i = 1;
-            int dec_num = HexToDecimal(hexa);
-
-            /* convert decimal to binary */        
-            while(dec_num != 0)
-            {
-                binary_val[i++] = dec_num%2;
-                dec_num = dec_num/2;
-            }
-
-        }
-        return binary_val;
-    }
-    
-    public int[] DecimalToBinary(String decimal)
-    {
-        int[] binary_val = new int[5];
-
-        if (!decimal.isEmpty())
-        {
-            int i = 0;
-            int quot = Integer.parseInt(decimal);
-            while(quot != 0)
-            {
-                binary_val[i++] = quot%2;
-                quot = quot/2;
-            }
-            //zero pad after
-        }
-        
-        return binary_val;
-    }
-    
-    public String BinaryToHex(int[] binary)
-    {
-        String bin_string = "";
-        for (int bin : binary)
-        {
-            bin_string += bin;
-        }
-        System.out.println("Full binary opcode: " + bin_string);
-//        for (int i = binary.length - 1; i >= 0; i--)
-//        {
-//            bin_string += binary[i];
-//        }
-//        System.out.println(bin_string);
-        BigInteger b = new BigInteger(bin_string, 2);
-        String converted_hex = b.toString(16);
-        String zero_pads = "";
-        
-        for (int i = 0; i <= 7 - converted_hex.length(); i++) // 8 bits - length of actual hex
-        {
-            zero_pads += "0";
-        }
-        return zero_pads + converted_hex;
-    }
-    
     //IF
     public void instruction_fetch(){
         //IR <-- Mem[PC}
