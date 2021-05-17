@@ -21,6 +21,7 @@ public class MainFrame extends javax.swing.JFrame {
      * Creates new form MainFrame
      */
     Pipeline pipeline;
+    Opcode opcode;
     DefaultTableModel memory_table;
     DefaultTableModel program_table;
     HashMap<String, Integer> register_alias_map;
@@ -28,6 +29,7 @@ public class MainFrame extends javax.swing.JFrame {
     public MainFrame() {
         initComponents();
         pipeline = new Pipeline();
+        opcode = new Opcode();
         
         register_alias_map = new HashMap<String, Integer>() {{ //this is used when the instruction is invoking the alias name which will point to a row number (the integer value)
             put("t0", 5);
@@ -68,12 +70,10 @@ public class MainFrame extends javax.swing.JFrame {
             Vector cell = new Vector(); //this stores the value of each 'cell' per address row
             int[] decimal_to_binary = Convert.IntDecimalToBinary(i, 12); //12 bits == 2048 (according to specs)
             String binary_to_hex = Convert.BinaryToHex(decimal_to_binary);
-            System.out.println(binary_to_hex);
             cell.add("0x"+binary_to_hex);
             for (int j = 4; j < 32; j+=4) //add half bytes
             {
                 binary_to_hex = Convert.BinaryToHex(Convert.IntDecimalToBinary(0, 12));
-                System.out.println(binary_to_hex);
                 cell.add(binary_to_hex);
             }
             this.memory_table.addRow(cell);
@@ -330,21 +330,23 @@ public class MainFrame extends javax.swing.JFrame {
         lines = jEditorPane1.getText().split("\n");
         lines_length = lines.length;
         current_line = 0;
+        System.out.println("Got "+lines_length + "lines");
         PopulateProgramTextSegmentAddress();
         System.out.println("COMPILED");
-        System.out.println("Got "+lines_length + "lines");
     }//GEN-LAST:event_jBtnAssembleActionPerformed
 
     public void PopulateProgramTextSegmentAddress()
     {
         lines = jEditorPane1.getText().split("\n");
         this.program_table = (DefaultTableModel)jTableProgram.getModel();
-        for (int i = 0, j = 0; i < 4096; i+=4, j++)
+        for (int i = 0, j = 0; j < lines.length && i < 4096; i+=4, j++)
         {
             Vector cell = new Vector(); //this stores the value of each 'cell' per address row
             int[] decimal_to_binary = Convert.IntDecimalToBinary(i, 13); //13 bits == 4096 (according to specs)
             String binary_to_hex = Convert.BinaryToHex(decimal_to_binary);
+            String instruction_opcode = opcode.GenerateOpcode(lines[j], jTableRegister);
             cell.add("0x"+binary_to_hex);
+            cell.add(instruction_opcode);
             cell.add(lines[j]);
             this.program_table.addRow(cell);
         }
@@ -432,8 +434,8 @@ public class MainFrame extends javax.swing.JFrame {
     public void ReadCurrentLine()
     {
         //parse or read line here
-        System.out.println(lines[current_line]);
-        pipeline.parse_line(lines[current_line], current_line, jTableRegister);
+//        System.out.println(lines[current_line]);
+//        opcode.GenerateOpcode(lines[current_line], jTableRegister);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
