@@ -132,12 +132,14 @@ public class Opcode {
             int[] funct3_opcode = funct3_opcode_map.get(instruction);
 
             int rd_table_row = GetRegisterTableRow(params[0]);
+//            int rd_table_row;
             int rs1_table_row;
             int rs2_table_row;
             String hexa_value;
 
             //they are in bits but their value needs to be extracted first
             int[] rd_binary = Convert.DecimalToBinary(Integer.toString(rd_table_row)); //5 bits // this is the IMM in the opcode location
+//            int[] rd_binary = new int[5];
             int[] rs1_binary = new int[5]; //5 bits // 
             int[] rs2_binary = new int[5]; //5 bits
             
@@ -147,12 +149,27 @@ public class Opcode {
                     rs1_table_row = GetRegisterTableRow(params[1]);
                     hexa_value = GetHexaValueFromTableRow(rs1_table_row, jTableRegister);
                     rs1_binary = Convert.HexaToBinary(hexa_value);
-                    binary_opcode = AddInstructionBinaryToOpcode(binary_opcode, instruction_opcode);
-                    binary_opcode = AddIMMBinaryToOpcode(binary_opcode, rd_binary);
-                    binary_opcode = AddFunct3BinaryToOpcode(binary_opcode, funct3_opcode);
-                    binary_opcode = AddRS1BinaryToOpcode(binary_opcode, rs1_binary);
+                    
+                    AddInstructionBinaryToOpcode(binary_opcode, instruction_opcode);
+                    AddRDBinaryToOpcode(binary_opcode, rd_binary);
+                    AddFunct3BinaryToOpcode(binary_opcode, funct3_opcode);
+                    AddRS1BinaryToOpcode(binary_opcode, rs1_binary);
+                    
                     full_opcode = Convert.BinaryToHex(binary_opcode);
                     break;
+//                case "sw":
+//                    String[] pre_offset_params = params[1].split("("); //this removes the ( in (x8) <-- example
+//                    String offset = pre_offset_params[0]; //we should be able to get the offset address
+//                    String rs1_register = pre_offset_params[1].replace(")", ""); // we will remove the closing parenthesis from x8)
+//                    String rs2_register = params[0];
+//                    
+//                    rd_binary = GetIMMBinaryOfOffset(offset);
+//                    rs1_table_row = GetRegisterTableRow(rs1_register);
+//                    rs1_binary = Convert.IntDecimalToBinary(rs1_table_row);
+//                    rs2_table_row = GetRegisterTableRow(rs2_register); //rs2_register is the rd, in sw instruction
+//                    rs2_binary = Convert.IntDecimalToBinary(rs2_table_row);
+//                    binary_opcode = AddInstructionBinaryToOpcode(binary_opcode,)
+//                    break;
                 case "add":
                     rs1_table_row = GetRegisterTableRow(params[1]);
                     rs2_table_row = GetRegisterTableRow(params[2]);
@@ -160,11 +177,13 @@ public class Opcode {
                     rs1_binary = Convert.HexaToBinary(hexa_value);
                     hexa_value = GetHexaValueFromTableRow(rs2_table_row, jTableRegister);
                     rs2_binary = Convert.HexaToBinary(hexa_value);
-                    binary_opcode = AddInstructionBinaryToOpcode(binary_opcode, instruction_opcode);
-                    binary_opcode = AddIMMBinaryToOpcode(binary_opcode, rd_binary);
-                    binary_opcode = AddFunct3BinaryToOpcode(binary_opcode, funct3_opcode);
-                    binary_opcode = AddRS1BinaryToOpcode(binary_opcode, rs1_binary);
-                    binary_opcode = AddRS2BinaryToOpcode(binary_opcode, rs2_binary);
+                    
+                    AddInstructionBinaryToOpcode(binary_opcode, instruction_opcode);
+                    AddRDBinaryToOpcode(binary_opcode, rd_binary);
+                    AddFunct3BinaryToOpcode(binary_opcode, funct3_opcode);
+                    AddRS1BinaryToOpcode(binary_opcode, rs1_binary);
+                    AddRS2BinaryToOpcode(binary_opcode, rs2_binary);
+                    
                     full_opcode = Convert.BinaryToHex(binary_opcode);
                     break;
                 default: //error check
@@ -180,54 +199,82 @@ public class Opcode {
         return full_opcode;
     }
     
-    public int[] AddInstructionBinaryToOpcode(int[] opcode_to_apply, int[] instruction_binary_opcode)
+    /***
+     * Updates the Opcode Range 6 - 0
+     * @param opcode_to_apply
+     * @param instruction_binary_opcode
+     * @return 
+     */
+    public static void AddInstructionBinaryToOpcode(int[] opcode_to_apply, int[] instruction_binary_opcode)
     {
-        System.out.println("Instruction binary opcode length "+instruction_binary_opcode.length);
         for (int i = 6, j = 0; i >= 0; i--,j++)
         {
             opcode_to_apply[31-i] = instruction_binary_opcode[j];
         }
-        return opcode_to_apply;
     }
     
-    public int[] AddIMMBinaryToOpcode(int[] opcode_to_apply, int[] imm_binary_opcode)
+    /***
+     * Updates the opcode range 11 - 7
+     * @param opcode_to_apply
+     * @param rd_binary_opcode
+     * @return 
+     */
+    public static void AddRDBinaryToOpcode(int[] opcode_to_apply, int[] rd_binary_opcode)
     {
-        System.out.println("imm binary opcode length "+imm_binary_opcode.length);
         for (int i = 11, j = 0; i >= 7; i--, j++)
         {
-            opcode_to_apply[31-i] = imm_binary_opcode[j];
+            opcode_to_apply[31-i] = rd_binary_opcode[j];
         }
-        return opcode_to_apply;
     }
     
-    public int[] AddFunct3BinaryToOpcode(int[] opcode_to_apply, int[] funct3_binary_opcode)
+    /***
+     * Updates the opcode Range 14 - 12
+     * @param opcode_to_apply
+     * @param funct3_binary_opcode
+     * @return 
+     */
+    public static void AddFunct3BinaryToOpcode(int[] opcode_to_apply, int[] funct3_binary_opcode)
     {
-        System.out.println("funct3 binary opcode length "+funct3_binary_opcode.length);
         for (int i = 14, j = 0; i >= 12; i--, j++)
         {
             opcode_to_apply[31-i] = funct3_binary_opcode[j];
         }
-        return opcode_to_apply;
     }
     
-    public int[] AddRS1BinaryToOpcode(int[] opcode_to_apply, int[] rs1_binary_opcode)
+    /***
+     * Updates the opcode range 19 - 15
+     * @param opcode_to_apply
+     * @param rs1_binary_opcode
+     * @return 
+     */
+    public static void AddRS1BinaryToOpcode(int[] opcode_to_apply, int[] rs1_binary_opcode)
     {
-        System.out.println("rs1 binary opcode length "+rs1_binary_opcode.length);
         for (int i = 19, j = 0; i >= 15; i--,j++)
         {
             opcode_to_apply[31-i] = rs1_binary_opcode[j];
         }
-        return opcode_to_apply;
     }
     
-    public int[] AddRS2BinaryToOpcode(int[] opcode_to_apply, int[] rs2_binary_opcode)
+    /***
+     * Updates the opcode range 24 - 20
+     * @param opcode_to_apply
+     * @param rs2_binary_opcode
+     * @return 
+     */
+    public static void AddRS2BinaryToOpcode(int[] opcode_to_apply, int[] rs2_binary_opcode)
     {
-        System.out.println("rs2 binary opcode length "+rs2_binary_opcode.length);
         for (int i = 24, j = 0; i >= 20; i--,j++)
         {
             opcode_to_apply[31-i] = rs2_binary_opcode[j];
         }
-        return opcode_to_apply;
+    }
+    
+    public static void AddIMMBinaryToOpcode(int[] opcode_to_apply, int[] imm_binary_opcode)
+    {
+        for (int i = 31, j = 0; i >= 25; i--, j++)
+        {
+            opcode_to_apply[31-i] = imm_binary_opcode[j];
+        }
     }
     
     public int GetRegisterTableRow(String register) throws Exception{
@@ -261,6 +308,15 @@ public class Opcode {
         rd_value = rd_value.replace("0x", ""); //removes the radix
         
         return rd_value;
+    }
+    
+    public int[] GetIMMBinaryOfOffset(String full_param)
+    { //accepts 0x100(x8) (0x100 is hexadecimal)
+//        String[] pre_offset_params = full_param.split("(");
+//        String offset = pre_offset_params[0]; //we should be able to get the 0x100 ez
+        String offset = full_param.replace("0x", "");
+        int[] offset_binary = Convert.HexaToBinary(offset, 12); //12 bits for the imm
+        return offset_binary;
     }
     
 }
