@@ -13,6 +13,11 @@ import java.math.BigInteger;
  */
 public class Convert {
     
+    /***
+     * Converts string Hexadecimal to int Decimal
+     * @param s
+     * @return 
+     */
     public static int HexToDecimal(String s)
     {
              String digits = "0123456789ABCDEF";
@@ -27,6 +32,11 @@ public class Convert {
              return val;
     }
     
+    /***
+     * Converts string Hexadecimal to int list Binary 
+     * @param hexa
+     * @return 
+     */
     public static int[] HexaToBinary(String hexa)
     {
         int[] binary_val = new int[5];
@@ -47,6 +57,11 @@ public class Convert {
         return binary_val;
     }
     
+    /***
+     * Converts string Decimal to int list Binary
+     * @param decimal
+     * @return 
+     */
     public static int[] DecimalToBinary(String decimal)
     {
         int[] binary_val = new int[5];
@@ -65,6 +80,13 @@ public class Convert {
         
         return binary_val;
     }
+    /***
+     * Converts integer Decimal to int list Binary
+     * Also accepts number for bits of >5
+     * @param decimal
+     * @param num_bits
+     * @return 
+     */
     public static int[] IntDecimalToBinary(int decimal, int num_bits)
     {
         if(num_bits == 0)
@@ -89,7 +111,22 @@ public class Convert {
         return binary_val;
     }
     
+    /***
+     * Converts int Decimal to int list Binary, without the num_bits parameter
+     * @param decimal
+     * @return 
+     */
     
+    public static int[] IntDecimalToBinary(int decimal)
+    {
+        return IntDecimalToBinary(decimal, 0);
+    }
+    
+    /***
+     * Converts int list Binary to string Hexadecimal
+     * @param binary
+     * @return 
+     */
     public static String BinaryToHex(int[] binary)
     {
         String bin_string = "";
