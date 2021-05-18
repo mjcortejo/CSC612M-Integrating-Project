@@ -29,7 +29,6 @@ public class MainFrame extends javax.swing.JFrame {
     public MainFrame() {
         initComponents();
         pipeline = new Pipeline();
-        opcode = new Opcode();
         
         register_alias_map = new HashMap<String, Integer>() {{ //this is used when the instruction is invoking the alias name which will point to a row number (the integer value)
             put("t0", 5);
@@ -337,6 +336,7 @@ public class MainFrame extends javax.swing.JFrame {
 
     public void PopulateProgramTextSegmentAddress()
     {
+        opcode = new Opcode(jTableRegister, jTableProgram);
         lines = jEditorPane1.getText().split("\n");
         this.program_table = (DefaultTableModel)jTableProgram.getModel();
         for (int i = 0, j = 0; j < lines.length && i < 4096; i+=4, j++)
@@ -344,11 +344,21 @@ public class MainFrame extends javax.swing.JFrame {
             Vector cell = new Vector(); //this stores the value of each 'cell' per address row
             int[] decimal_to_binary = Convert.IntDecimalToBinary(i, 13); //13 bits == 4096 (according to specs)
             String binary_to_hex = Convert.BinaryToHex(decimal_to_binary);
-            String instruction_opcode = opcode.GenerateOpcode(lines[j], jTableRegister);
+//            String instruction_opcode = opcode.GenerateOpcode(lines[j], jTableRegister);
             cell.add("0x"+binary_to_hex);
-            cell.add(instruction_opcode);
+            cell.add("");
             cell.add(lines[j]);
             this.program_table.addRow(cell);
+        }
+        
+        DefaultTableModel program_model = (DefaultTableModel)jTableProgram.getModel();
+
+        for (int i = 0; i < jTableProgram.getRowCount(); i++)
+        {
+            Object pre_rd_value = jTableProgram.getValueAt(i, 0);
+            String hex_value = (pre_rd_value == null) ? "" : pre_rd_value.toString();
+            String full_opcode = opcode.GenerateOpcode(lines[i]);
+            program_model.setValueAt(full_opcode, i, 1);
         }
       
     }
