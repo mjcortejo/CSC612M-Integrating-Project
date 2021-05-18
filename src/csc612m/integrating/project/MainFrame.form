@@ -45,8 +45,8 @@
                   </Group>
                   <Component id="jScrollPane5" alignment="1" min="-2" pref="1135" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="61" max="32767" attributes="0"/>
-              <Component id="jTabbedPane1" pref="231" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jTabbedPane1" pref="286" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
