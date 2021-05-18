@@ -17,6 +17,7 @@ public class Opcode {
     
     HashMap<String, int[]> instruction_opcode_map;
     HashMap<String, int[]> funct3_opcode_map;
+    HashMap<String, int[]> funct7_opcode_map;
     HashMap<String, Integer> register_alias_map;
     int[] binary_opcode;
     
@@ -67,6 +68,20 @@ public class Opcode {
             put("blt", new int[] {1,0,0});
             put("bge", new int[] {1,0,1});
         }};
+        
+        //add, and, or, xor, slt, sll, and srl
+        //slli, srli
+        funct7_opcode_map = new HashMap<String, int[]>(){{
+           put("add", new int[] {0,0,0,0,0,0,0});
+           put("and", new int[] {0,0,0,0,0,0,0});
+           put("or", new int[] {0,1,0,0,0,0,0});
+           put("xor", new int[] {0,0,0,0,0,0,0});
+           put("slt", new int[] {0,0,0,0,0,0,0});
+           put("srl", new int[] {0,0,0,0,0,0,0});
+           put("slli", new int[] {0,0,0,0,0,0,0});
+           put("srli", new int[] {0,0,0,0,0,0,0});
+        }};
+        
         //this is used when the instruction is invoking the alias name 
         //which will point to a row number (the integer value)
         register_alias_map = new HashMap<String, Integer>() {{ 
@@ -131,6 +146,7 @@ public class Opcode {
             //get instruction first
             int[] instruction_opcode = instruction_opcode_map.get(instruction);
             int[] funct3_opcode = funct3_opcode_map.get(instruction);
+            int[] funct7_opcode = funct7_opcode_map.get(instruction);
 
             int rd_table_row = GetRegisterTableRow(params[0]);
             int rs1_table_row;
@@ -198,6 +214,7 @@ public class Opcode {
                     AddBinaryToOpcode(binary_opcode, funct3_opcode, 14, 12);
                     AddBinaryToOpcode(binary_opcode, rs1_binary, 19, 15);
                     AddBinaryToOpcode(binary_opcode, rs2_binary, 24, 20);
+                    AddBinaryToOpcode(binary_opcode, funct7_opcode, 31, 25);
                     
                     binary_opcode = InvertBinary(binary_opcode);
                     full_opcode = Convert.BinaryToHex(binary_opcode);
@@ -208,6 +225,8 @@ public class Opcode {
                 case "ori":
                 case "xori":
                     rs1_table_row = GetRegisterTableRow(params[1]);
+                    hexa_value = GetHexaValueFromTableRow(rs1_table_row, jTableRegister);
+                    rs1_binary = Convert.HexaToBinary(hexa_value);
                     int[] imm_binary = Convert.DecimalToBinary(params[2], 12);
                     
                     AddBinaryToOpcode(binary_opcode, instruction_opcode, 6, 0);
@@ -215,6 +234,23 @@ public class Opcode {
                     AddBinaryToOpcode(binary_opcode, funct3_opcode, 14, 12);
                     AddBinaryToOpcode(binary_opcode, rs1_binary, 19, 15);
                     AddBinaryToOpcode(binary_opcode, imm_binary, 31, 20);
+                    
+                    binary_opcode = InvertBinary(binary_opcode);
+                    full_opcode = Convert.BinaryToHex(binary_opcode);
+                    break;
+                case "slli":
+                case "srli":
+                    rs1_table_row = GetRegisterTableRow(params[1]);
+                    hexa_value = GetHexaValueFromTableRow(rs1_table_row, jTableRegister);
+                    rs1_binary = Convert.HexaToBinary(hexa_value);
+                    
+                    int[] shamt_binary = Convert.DecimalToBinary(params[2]);
+                    
+                    AddBinaryToOpcode(binary_opcode, instruction_opcode, 6, 0);
+                    AddBinaryToOpcode(binary_opcode, rd_binary, 11, 7);
+                    AddBinaryToOpcode(binary_opcode, funct3_opcode, 14, 12);
+                    AddBinaryToOpcode(binary_opcode, rs1_binary, 19, 15);
+                    AddBinaryToOpcode(binary_opcode, shamt_binary, 24, 20);
                     
                     binary_opcode = InvertBinary(binary_opcode);
                     full_opcode = Convert.BinaryToHex(binary_opcode);
