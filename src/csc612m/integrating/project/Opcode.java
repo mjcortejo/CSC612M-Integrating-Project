@@ -155,7 +155,6 @@ public class Opcode {
                     AddBinaryToOpcode(binary_opcode, rs1_binary, 19, 15);
                     
                     binary_opcode = InvertBinary(binary_opcode);
-                    
                     full_opcode = Convert.BinaryToHex(binary_opcode);
                     break;
                 case "sw":
@@ -177,10 +176,16 @@ public class Opcode {
                     AddBinaryToOpcode(binary_opcode, rs2_binary, 24, 20);
                     
                     binary_opcode = InvertBinary(binary_opcode);
-                    
                     full_opcode = Convert.BinaryToHex(binary_opcode);
                     break;
+//              add, and, or, xor, slt, sll, and srl are grouped because they share similar opcode construction
                 case "add":
+                case "and":
+                case "or":
+                case "xor":
+                case "slt":
+                case "sll":
+                case "srl":
                     rs1_table_row = GetRegisterTableRow(params[1]);
                     rs2_table_row = GetRegisterTableRow(params[2]);
                     hexa_value = GetHexaValueFromTableRow(rs1_table_row, jTableRegister);
@@ -195,10 +200,13 @@ public class Opcode {
                     AddBinaryToOpcode(binary_opcode, rs2_binary, 24, 20);
                     
                     binary_opcode = InvertBinary(binary_opcode);
-                    
                     full_opcode = Convert.BinaryToHex(binary_opcode);
                     break;
                 case "addi":
+                case "andi":
+                case "slti":
+                case "ori":
+                case "xori":
                     rs1_table_row = GetRegisterTableRow(params[1]);
                     int[] imm_binary = Convert.DecimalToBinary(params[2], 12);
                     
@@ -209,7 +217,6 @@ public class Opcode {
                     AddBinaryToOpcode(binary_opcode, imm_binary, 31, 20);
                     
                     binary_opcode = InvertBinary(binary_opcode);
-                    
                     full_opcode = Convert.BinaryToHex(binary_opcode);
                     break;
                 default: //error check
