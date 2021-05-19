@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -25,12 +27,12 @@ public class MainFrame extends javax.swing.JFrame {
     DefaultTableModel memory_table;
     DefaultTableModel program_table;
     HashMap<String, Integer> register_alias_map;
-    HashMap<String, String> data_segment_map;
+    HashMap<String, int[]> data_segment_map;
     
     public MainFrame() {
         initComponents();
         pipeline = new Pipeline();
-        data_segment_map = new HashMap<String, String>();
+        data_segment_map = new HashMap<String, int[]>();
         
         register_alias_map = new HashMap<String, Integer>() {{ //this is used when the instruction is invoking the alias name which will point to a row number (the integer value)
             put("t0", 5);
@@ -337,6 +339,54 @@ public class MainFrame extends javax.swing.JFrame {
         lines = jEditorPane1.getText().split("\n");
         lines_length = lines.length;
         current_line = 0;
+        
+        int current_parse_line = 0;
+        int sourcecode_section_state = 0;
+        
+        if (sourcecode_section_state == 0)//initial state
+        {
+            for (int i = 0; i < lines.length; i++)
+            {
+                String current = lines[i];
+                if(current.contains(".data"))
+                {
+                    sourcecode_section_state = 1;
+                    current_parse_line = i;
+                    break;
+                }
+            }
+        }
+        
+        int current_memory_row = 0;
+        int current_memory_col = 1;
+        
+        String pattern = "(\\w+:) (.\\w+) (\\d+)";
+        Pattern variable_pattern = Pattern.compile(pattern);
+        
+        if (sourcecode_section_state == 1) //currently in .data section
+        {
+            for (int i = current_parse_line; i < lines.length; i++)
+            {
+                String current = lines[i];
+                Matcher m = variable_pattern.matcher(current);
+                
+                if(m.find())
+                {
+                    String var_name = m.group(1);
+                    String data_type = m.group(2);
+                    String value = m.group(3);
+
+                    if (current_memory_col > 7)
+                    {
+                        current_memory_row++;
+                        current_memory_col = 1;
+                    }
+                    data_segment_map.put(var_name, new int[]{current_memory_row, current_memory_col});
+                    current_memory_col++;
+                }
+            }
+        }
+        
         System.out.println("Got "+lines_length + "lines");
         PopulateProgramTextSegmentAddress();
         System.out.println("COMPILED");
