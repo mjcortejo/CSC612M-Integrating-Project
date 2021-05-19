@@ -29,7 +29,7 @@ public class MainFrame extends javax.swing.JFrame {
     
     public MainFrame() {
         initComponents();
-        pipeline = new Pipeline();
+//        pipeline = new Pipeline();
         data_segment_map = new HashMap<String, String>();
         
         register_alias_map = new HashMap<String, Integer>() {{ //this is used when the instruction is invoking the alias name which will point to a row number (the integer value)
@@ -339,6 +339,7 @@ public class MainFrame extends javax.swing.JFrame {
         current_line = 0;
         System.out.println("Got "+lines_length + "lines");
         PopulateProgramTextSegmentAddress();
+        pipeline = new Pipeline(jTableRegister, jTableProgram);
         System.out.println("COMPILED");
     }//GEN-LAST:event_jBtnAssembleActionPerformed
 
@@ -371,7 +372,6 @@ public class MainFrame extends javax.swing.JFrame {
             String full_opcode = opcode.GenerateOpcode(lines[i], i);
             program_model.setValueAt(full_opcode, i, 1);
         }
-      
     }
     private void jBtnNextLineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnNextLineActionPerformed
         // TODO add your handling code here:
@@ -455,7 +455,6 @@ public class MainFrame extends javax.swing.JFrame {
     public void ReadCurrentLine()
     {
         //parse or read line here
-//        System.out.println(lines[current_line]);
 //        opcode.GenerateOpcode(lines[current_line], jTableRegister);
     }
 
