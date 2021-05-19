@@ -330,12 +330,24 @@ public class Opcode {
                     full_opcode = Convert.BinaryToHex(binary_opcode);
                     break;
                 default: //check if its a label
-                    Pattern pattern = Pattern.compile("\\w:", Pattern.CASE_INSENSITIVE);
+                    Pattern pattern = Pattern.compile("(\\w+\\:|\\.\\w+)", Pattern.CASE_INSENSITIVE);
                     Matcher matcher = pattern.matcher(line);
                     
                     if (matcher.find())
                     {
-                        System.out.println("Found a label");
+                        System.out.println(matcher.group(0));
+                        if (matcher.group(0).equals(".data"))
+                        {
+                            System.out.println("Data Section detected");
+                        }
+                        else if (matcher.group(0).equals(".text"))
+                        {
+                            System.out.println("Text Section detected");
+                        }
+                        else
+                        {
+                            System.out.println("Found a label");
+                        }
                     }
                     else //assumes invalid instruction
                     {

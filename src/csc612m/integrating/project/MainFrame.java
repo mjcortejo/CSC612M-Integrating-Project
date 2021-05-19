@@ -377,6 +377,7 @@ public class MainFrame extends javax.swing.JFrame {
                     current_parse_line = i;
                     break;
                 }
+                
                 Matcher m = variable_pattern.matcher(current);
                 
                 if(m.find())
@@ -442,12 +443,10 @@ public class MainFrame extends javax.swing.JFrame {
         DefaultTableModel program_model = (DefaultTableModel)jTableProgram.getModel();
         
         //assign opcodes after loading the instructions in memory
-        for (int i = 0; i < jTableProgram.getRowCount(); i++)
+        for (int i = current_parse_line + 1, j = 0; i < lines.length; i++, j++)
         {
-//            Object pre_rd_value = jTableProgram.getValueAt(i, 0);
-//            String hex_value = (pre_rd_value == null) ? "" : pre_rd_value.toString();
-            String full_opcode = opcode.GenerateOpcode(lines[i], i);
-            program_model.setValueAt(full_opcode, i, 1);
+            String full_opcode = opcode.GenerateOpcode(lines[i], j);
+            program_model.setValueAt(full_opcode, j, 1);
         }
       
     }
