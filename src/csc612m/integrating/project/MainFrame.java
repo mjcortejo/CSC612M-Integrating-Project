@@ -8,6 +8,7 @@ package csc612m.integrating.project;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -77,7 +78,7 @@ public class MainFrame extends javax.swing.JFrame {
             Vector cell = new Vector(); //this stores the value of each 'cell' per address row
             int[] decimal_to_binary = Convert.IntDecimalToBinary(i, 12); //12 bits == 2048 (according to specs)
             String binary_to_hex = Convert.BinaryToHex(decimal_to_binary);
-            cell.add("0x"+binary_to_hex); //this is just the label
+            cell.add(binary_to_hex); //this is just the label
             for (int j = 4; j < 32; j+=4) //add half bytes
             {
                 binary_to_hex = Convert.BinaryToHex(Convert.IntDecimalToBinary(0, 12));
@@ -306,8 +307,8 @@ public class MainFrame extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jBtnNextLine))))
                     .addComponent(jScrollPane5, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 1135, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 61, Short.MAX_VALUE)
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 286, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -340,6 +341,8 @@ public class MainFrame extends javax.swing.JFrame {
         lines_length = lines.length;
         current_line = 0;
         
+        this.memory_table = (DefaultTableModel)jTableMemory.getModel();
+        
         int current_parse_line = 0;
         int sourcecode_section_state = 0;
         
@@ -368,6 +371,12 @@ public class MainFrame extends javax.swing.JFrame {
             for (int i = current_parse_line; i < lines.length; i++)
             {
                 String current = lines[i];
+                if(current.contains(".text"))
+                {
+                    sourcecode_section_state = 2;
+                    current_parse_line = i;
+                    break;
+                }
                 Matcher m = variable_pattern.matcher(current);
                 
                 if(m.find())
@@ -375,37 +384,56 @@ public class MainFrame extends javax.swing.JFrame {
                     String var_name = m.group(1);
                     String data_type = m.group(2);
                     String value = m.group(3);
+                    int value_int = Integer.parseInt(value);
 
                     if (current_memory_col > 7)
                     {
                         current_memory_row++;
                         current_memory_col = 1;
                     }
-                    data_segment_map.put(var_name, new int[]{current_memory_row, current_memory_col});
+                    data_segment_map.put(var_name, new int[]{current_memory_row, current_memory_col, value_int});
                     current_memory_col++;
                 }
+                current_parse_line = i;
+                
+                
             }
+            
+            for (Map.Entry<String, int[]> pair: data_segment_map.entrySet())
+            {
+                int row = pair.getValue()[0];
+                int column = pair.getValue()[1];
+                int value = pair.getValue()[2];
+                int[] data_value_binary = Convert.IntDecimalToBinary(value, 32);
+                String data_value_hex = Convert.BinaryToHex(data_value_binary);
+                memory_table.setValueAt(data_value_hex, row, column);
+            }
+            sourcecode_section_state = 2;
         }
         
-        System.out.println("Got "+lines_length + "lines");
-        PopulateProgramTextSegmentAddress();
+        if (sourcecode_section_state == 2)//initial state
+        {
+            PopulateProgramTextSegmentAddress(current_parse_line);
+        }
+        
+       
         System.out.println("COMPILED");
     }//GEN-LAST:event_jBtnAssembleActionPerformed
 
     /***
      * Populates the jTableProgram table from the source code
      */
-    public void PopulateProgramTextSegmentAddress()
+    public void PopulateProgramTextSegmentAddress(int current_parse_line)
     {
         opcode = new Opcode(jTableRegister, jTableProgram);
         lines = jEditorPane1.getText().split("\n");
         this.program_table = (DefaultTableModel)jTableProgram.getModel();
-        for (int i = 0, j = 0; j < lines.length && i < 4096; i+=4, j++)
+        for (int i = 0, j = current_parse_line + 1; j < lines.length && i < 4096; i+=4, j++)
         {
             Vector cell = new Vector(); //this stores the value of each 'cell' per address row
             int[] decimal_to_binary = Convert.IntDecimalToBinary(i, 13); //13 bits == 4096 (according to specs)
             String binary_to_hex = Convert.BinaryToHex(decimal_to_binary);
-            cell.add("0x"+binary_to_hex);
+            cell.add(binary_to_hex);
             cell.add(""); //empty opcodes column for now
             cell.add(lines[j]);
             this.program_table.addRow(cell);
