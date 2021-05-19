@@ -7,6 +7,9 @@ package csc612m.integrating.project;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JTable;
 
 /**
@@ -21,8 +24,19 @@ public class Opcode {
     HashMap<String, Integer> register_alias_map;
     int[] binary_opcode;
     
-    public Opcode()
+    JTable jTableRegister;
+    JTable jTableProgram;
+    
+    /***
+     * 
+     * @param jTableRegister_param
+     * @param jTableProgram_param 
+     */
+    public Opcode(JTable jTableRegister_param, JTable jTableProgram_param)
     {
+        jTableRegister = jTableRegister_param;
+        jTableProgram = jTableProgram_param;
+        
         instruction_opcode_map = new HashMap<String, int[]>() {{
             put("lw",  new int[] {0,0,0,0,0,1,1});
             put("sw",  new int[] {0,1,0,0,0,1,1});
@@ -118,7 +132,7 @@ public class Opcode {
     //we should probably dissect the pipeline's execution as each function (etc. Decode = 1 function, PC = 1 function, 
     //so we can reflect the state of the simulator back to the GUI
     
-    public String GenerateOpcode(String line, JTable jTableRegister)
+    public String GenerateOpcode(String line, int current_line)
     {
         String full_opcode = "";
         binary_opcode = new int[32];
@@ -148,22 +162,24 @@ public class Opcode {
             int[] funct3_opcode = funct3_opcode_map.get(instruction);
             int[] funct7_opcode = funct7_opcode_map.get(instruction);
 
-            int rd_table_row = GetRegisterTableRow(params[0]);
+            int rd_table_row;
             int rs1_table_row;
             int rs2_table_row;
             String hexa_value;
 
             //they are in bits but their value needs to be extracted first
-            int[] rd_binary = Convert.DecimalToBinary(Integer.toString(rd_table_row)); //5 bits // this is the IMM in the opcode location
+            int[] rd_binary = new int[5]; //5 bits // this is the IMM in the opcode location
             int[] rs1_binary = new int[5]; //5 bits // 
             int[] rs2_binary = new int[5]; //5 bits
             
             switch(instruction.toLowerCase())
             {
                 case "lw":
+                    rd_table_row = GetRegisterTableRow(params[0]);
                     rs1_table_row = GetRegisterTableRow(params[1]);
-                    hexa_value = GetHexaValueFromTableRow(rs1_table_row, jTableRegister);
+                    hexa_value = GetHexaValueFromTableRow(rs1_table_row);
                     rs1_binary = Convert.HexaToBinary(hexa_value);
+                    rd_binary = Convert.DecimalToBinary(Integer.toString(rd_table_row)); 
                     
                     AddBinaryToOpcode(binary_opcode, instruction_opcode, 6, 0);
                     AddBinaryToOpcode(binary_opcode, rd_binary, 11, 7);
@@ -179,6 +195,7 @@ public class Opcode {
                     String rs1_register = pre_offset_params[1].replace(")", ""); // we will remove the closing parenthesis from x8)
                     String rs2_register = params[0];
                     
+                    rd_table_row = GetRegisterTableRow(params[0]);
                     rd_binary = GetIMMBinaryOfOffset(offset);
                     rs1_table_row = GetRegisterTableRow(rs1_register);
                     rs1_binary = Convert.IntDecimalToBinary(rs1_table_row);
@@ -202,11 +219,13 @@ public class Opcode {
                 case "slt":
                 case "sll":
                 case "srl":
+                    rd_table_row = GetRegisterTableRow(params[0]);
+                    rd_binary = Convert.DecimalToBinary(Integer.toString(rd_table_row)); 
                     rs1_table_row = GetRegisterTableRow(params[1]);
                     rs2_table_row = GetRegisterTableRow(params[2]);
-                    hexa_value = GetHexaValueFromTableRow(rs1_table_row, jTableRegister);
+                    hexa_value = GetHexaValueFromTableRow(rs1_table_row);
                     rs1_binary = Convert.HexaToBinary(hexa_value);
-                    hexa_value = GetHexaValueFromTableRow(rs2_table_row, jTableRegister);
+                    hexa_value = GetHexaValueFromTableRow(rs2_table_row);
                     rs2_binary = Convert.HexaToBinary(hexa_value);
                     
                     AddBinaryToOpcode(binary_opcode, instruction_opcode, 6, 0);
@@ -224,8 +243,10 @@ public class Opcode {
                 case "slti":
                 case "ori":
                 case "xori":
+                    rd_table_row = GetRegisterTableRow(params[0]);
+                    rd_binary = Convert.DecimalToBinary(Integer.toString(rd_table_row)); 
                     rs1_table_row = GetRegisterTableRow(params[1]);
-                    hexa_value = GetHexaValueFromTableRow(rs1_table_row, jTableRegister);
+                    hexa_value = GetHexaValueFromTableRow(rs1_table_row);
                     rs1_binary = Convert.HexaToBinary(hexa_value);
                     int[] imm_binary = Convert.DecimalToBinary(params[2], 12);
                     
@@ -240,8 +261,10 @@ public class Opcode {
                     break;
                 case "slli":
                 case "srli":
+                    rd_table_row = GetRegisterTableRow(params[0]);
+                    rd_binary = Convert.DecimalToBinary(Integer.toString(rd_table_row)); 
                     rs1_table_row = GetRegisterTableRow(params[1]);
-                    hexa_value = GetHexaValueFromTableRow(rs1_table_row, jTableRegister);
+                    hexa_value = GetHexaValueFromTableRow(rs1_table_row);
                     rs1_binary = Convert.HexaToBinary(hexa_value);
                     
                     int[] shamt_binary = Convert.DecimalToBinary(params[2]);
@@ -255,9 +278,63 @@ public class Opcode {
                     binary_opcode = InvertBinary(binary_opcode);
                     full_opcode = Convert.BinaryToHex(binary_opcode);
                     break;
-                default: //error check
-                    throw new Exception("Invalid instruction "+instruction);
-                
+                //BEQ, BNE, BLT, BGE
+                case "beq":
+                case "bne":
+                case "blt":
+                case "bge":
+                    funct7_opcode = new int[7]; //ignore funct7 mapping for branches
+                    
+                    rs1_table_row = GetRegisterTableRow(params[1]);
+                    hexa_value = GetHexaValueFromTableRow(rs1_table_row);
+                    rs1_binary = Convert.HexaToBinary(hexa_value);
+                    
+                    String current_line_hexadecimal = GetProgramHexValueFromTableRow(current_line);
+                    String branch_hexadecimal = FindLabelHexValueFromTableRow(params[2]); //params 3 is the target branch label
+                    
+                    //convert hexadecimals to decimal for easier computation
+                    int current_line_integer = Convert.HexToDecimal(current_line_hexadecimal);
+                    int branch_integer = Convert.HexToDecimal(branch_hexadecimal);
+                    
+                    //compute for the hexadecimal difference of label and current source
+                    int result = branch_integer - current_line_integer;
+                    int[] result_binary = Convert.IntDecimalToBinary(result, 12);
+                    
+                    rd_binary[4] = result_binary[1]; //res binary 1 == imm[11]
+                    for (int i = 11, j = 3; i >= 8; i--, j--)
+                    {
+                        rd_binary[j] = result_binary[i];
+                    }
+                    
+                    for (int i = 7; i >=2 ; i--)
+                    {
+                        funct7_opcode[i-1] = result_binary[i];
+                    }
+                    
+                    funct7_opcode[0] = result_binary[0];                    
+                    
+                    AddBinaryToOpcode(binary_opcode, instruction_opcode, 6, 0);
+                    AddBinaryToOpcode(binary_opcode, rd_binary, 11, 7); //to change
+                    AddBinaryToOpcode(binary_opcode, funct3_opcode, 14, 12);
+                    AddBinaryToOpcode(binary_opcode, rs1_binary, 19, 15);
+                    AddBinaryToOpcode(binary_opcode, rs2_binary, 24, 20);
+                    AddBinaryToOpcode(binary_opcode, funct7_opcode, 31, 25);
+                    
+                    binary_opcode = InvertBinary(binary_opcode);
+                    full_opcode = Convert.BinaryToHex(binary_opcode);
+                    break;
+                default: //check if its a label
+                    Pattern pattern = Pattern.compile("\\w:", Pattern.CASE_INSENSITIVE);
+                    Matcher matcher = pattern.matcher(line);
+                    
+                    if (matcher.find())
+                    {
+                        System.out.println("Found a label");
+                    }
+                    else //assumes invalid instruction
+                    {
+                        throw new Exception("Invalid Instruction "+instruction);
+                    }
             }
         }
         catch(Exception e)
@@ -282,6 +359,7 @@ public class Opcode {
             opcode_to_apply[31-i] = binary_opcode[j];
         }
     }
+    
     
     public static int[] InvertBinary(int[] binary_to_invert)
     {
@@ -326,7 +404,7 @@ public class Opcode {
         return table_row;
     }
     
-    public String GetHexaValueFromTableRow(int table_row, JTable jTableRegister)
+    public String GetHexaValueFromTableRow(int table_row)
     {
         Object pre_rd_value = jTableRegister.getValueAt(table_row, 2);
         String rd_value = (pre_rd_value == null) ? "" : pre_rd_value.toString();
@@ -334,6 +412,37 @@ public class Opcode {
         rd_value = rd_value.replace("0x", ""); //removes the radix
         
         return rd_value;
+    }
+    
+    public String GetProgramHexValueFromTableRow(int table_row)
+    {
+        Object pre_rd_value = jTableProgram.getValueAt(table_row, 0);
+        String rd_value = (pre_rd_value == null) ? "" : pre_rd_value.toString();
+        
+        rd_value = rd_value.replace("0x", ""); //removes the radix
+        
+        return rd_value;
+    }
+    
+    public String FindLabelHexValueFromTableRow(String label)
+    {
+        String found_label = "";
+        for (int i = 0; i < jTableProgram.getRowCount(); i++)
+        {
+            String temp_label = label + ":"; //because the target label has a colon in it, this'll make things easier
+            Object pre_current_label = jTableProgram.getValueAt(i, 2); //index 2 is the actual label row itself
+            String current_label = (pre_current_label == null) ? "" : pre_current_label.toString();
+            
+            if (temp_label.equals(current_label))
+            {
+                Object pre_found_label = jTableProgram.getValueAt(i, 0); //index 0 is the hexadecimal value of the label
+                found_label = (pre_found_label == null) ? "" : pre_found_label.toString();
+                
+                found_label = found_label.replace("0x", "");
+                break;
+            }
+        }
+        return found_label;
     }
     
     public int[] GetIMMBinaryOfOffset(String full_param)
