@@ -63,6 +63,10 @@ public class MainFrame extends javax.swing.JFrame {
         }};
         PopulateDataSegmentAddress();
     }
+    
+    /***
+     * Populates the Data Segment addresses with default hex values
+     */
     public void PopulateDataSegmentAddress()
     {
         this.memory_table = (DefaultTableModel)jTableMemory.getModel();
@@ -338,6 +342,9 @@ public class MainFrame extends javax.swing.JFrame {
         System.out.println("COMPILED");
     }//GEN-LAST:event_jBtnAssembleActionPerformed
 
+    /***
+     * Populates the jTableProgram table from the source code
+     */
     public void PopulateProgramTextSegmentAddress()
     {
         opcode = new Opcode(jTableRegister, jTableProgram);
