@@ -7,6 +7,7 @@ package csc612m.integrating.project;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JTable;
@@ -282,6 +283,8 @@ public class Opcode {
                 case "bne":
                 case "blt":
                 case "bge":
+                    funct7_opcode = new int[7]; //ignore funct7 mapping for branches
+                    
                     rs1_table_row = GetRegisterTableRow(params[1]);
                     hexa_value = GetHexaValueFromTableRow(rs1_table_row);
                     rs1_binary = Convert.HexaToBinary(hexa_value);
@@ -297,13 +300,28 @@ public class Opcode {
                     int result = branch_integer - current_line_integer;
                     int[] result_binary = Convert.IntDecimalToBinary(result, 12);
                     
+                    rd_binary[4] = result_binary[1]; //res binary 1 == imm[11]
+                    for (int i = 11, j = 3; i >= 8; i--, j--)
+                    {
+                        rd_binary[j] = result_binary[i];
+                    }
+                    
+                    for (int i = 7; i >=2 ; i--)
+                    {
+                        funct7_opcode[i-1] = result_binary[i];
+                    }
+                    
+                    funct7_opcode[0] = result_binary[0];                    
+                    
                     AddBinaryToOpcode(binary_opcode, instruction_opcode, 6, 0);
-                    AddBinaryToOpcode(binary_opcode, rd_binary, 11, 7);
+                    AddBinaryToOpcode(binary_opcode, rd_binary, 11, 7); //to change
                     AddBinaryToOpcode(binary_opcode, funct3_opcode, 14, 12);
                     AddBinaryToOpcode(binary_opcode, rs1_binary, 19, 15);
                     AddBinaryToOpcode(binary_opcode, rs2_binary, 24, 20);
                     AddBinaryToOpcode(binary_opcode, funct7_opcode, 31, 25);
                     
+                    binary_opcode = InvertBinary(binary_opcode);
+                    full_opcode = Convert.BinaryToHex(binary_opcode);
                     break;
                 default: //check if its a label
                     Pattern pattern = Pattern.compile("\\w:", Pattern.CASE_INSENSITIVE);
