@@ -8,7 +8,10 @@ package csc612m.integrating.project;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -25,12 +28,13 @@ public class MainFrame extends javax.swing.JFrame {
     DefaultTableModel memory_table;
     DefaultTableModel program_table;
     HashMap<String, Integer> register_alias_map;
-    HashMap<String, String> data_segment_map;
+    HashMap<String, int[]> data_segment_map;
     
     public MainFrame() {
         initComponents();
-//        pipeline = new Pipeline();
-        data_segment_map = new HashMap<String, String>();
+
+        pipeline = new Pipeline(jTableRegister, jTableProgram);
+        data_segment_map = new HashMap<String, int[]>();
         
         register_alias_map = new HashMap<String, Integer>() {{ //this is used when the instruction is invoking the alias name which will point to a row number (the integer value)
             put("t0", 5);
@@ -75,7 +79,7 @@ public class MainFrame extends javax.swing.JFrame {
             Vector cell = new Vector(); //this stores the value of each 'cell' per address row
             int[] decimal_to_binary = Convert.IntDecimalToBinary(i, 12); //12 bits == 2048 (according to specs)
             String binary_to_hex = Convert.BinaryToHex(decimal_to_binary);
-            cell.add("0x"+binary_to_hex); //this is just the label
+            cell.add(binary_to_hex); //this is just the label
             for (int j = 4; j < 32; j+=4) //add half bytes
             {
                 binary_to_hex = Convert.BinaryToHex(Convert.IntDecimalToBinary(0, 12));
@@ -107,6 +111,8 @@ public class MainFrame extends javax.swing.JFrame {
         jTableMemory = new javax.swing.JTable();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTableProgram = new javax.swing.JTable();
+        jScrollPane6 = new javax.swing.JScrollPane();
+        jTablePipelineMap = new javax.swing.JTable();
         jBtnRun = new javax.swing.JButton();
         jBtnNextLine = new javax.swing.JButton();
         jBtnPrevLine = new javax.swing.JButton();
@@ -251,6 +257,18 @@ public class MainFrame extends javax.swing.JFrame {
 
         jTabbedPane2.addTab("Execution", jTabbedPane3);
 
+        jTablePipelineMap.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+
+            }
+        ));
+        jScrollPane6.setViewportView(jTablePipelineMap);
+
+        jTabbedPane2.addTab("Pipeline Map", jScrollPane6);
+
         jBtnRun.setText("Run");
         jBtnRun.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -289,27 +307,30 @@ public class MainFrame extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jLabel1))
-                    .addComponent(jTabbedPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 1147, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(17, 17, 17)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(jBtnAssemble, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                .addComponent(jBtnPrevLine)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jBtnRun)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jBtnNextLine))))
-                    .addComponent(jScrollPane5, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 1135, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 61, Short.MAX_VALUE)
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE))
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                            .addContainerGap()
+                            .addComponent(jLabel1))
+                        .addGroup(layout.createSequentialGroup()
+                            .addGap(17, 17, 17)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addComponent(jBtnAssemble, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                    .addComponent(jBtnPrevLine)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(jBtnRun)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(jBtnNextLine))))
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                            .addGap(12, 12, 12)
+                            .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 1135, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(jTabbedPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 1147, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 286, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jTabbedPane1)
+            .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 672, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jBtnAssemble)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -318,8 +339,8 @@ public class MainFrame extends javax.swing.JFrame {
                     .addComponent(jBtnNextLine)
                     .addComponent(jBtnPrevLine))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTabbedPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 318, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 145, Short.MAX_VALUE)
+                .addComponent(jTabbedPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -337,26 +358,100 @@ public class MainFrame extends javax.swing.JFrame {
         lines = jEditorPane1.getText().split("\n");
         lines_length = lines.length;
         current_line = 0;
-        System.out.println("Got "+lines_length + "lines");
-        PopulateProgramTextSegmentAddress();
-        pipeline = new Pipeline(jTableRegister, jTableProgram);
+        
+        this.memory_table = (DefaultTableModel)jTableMemory.getModel();
+        
+        int current_parse_line = 0;
+        int sourcecode_section_state = 0;
+        
+        if (sourcecode_section_state == 0)//initial state
+        {
+            for (int i = 0; i < lines.length; i++)
+            {
+                String current = lines[i];
+                if(current.contains(".data"))
+                {
+                    sourcecode_section_state = 1;
+                    current_parse_line = i;
+                    break;
+                }
+            }
+        }
+        
+        int current_memory_row = 0;
+        int current_memory_col = 1;
+        
+        String pattern = "(\\w+:) (.\\w+) (\\d+)";
+        Pattern variable_pattern = Pattern.compile(pattern);
+        
+        if (sourcecode_section_state == 1) //currently in .data section
+        {
+            for (int i = current_parse_line; i < lines.length; i++)
+            {
+                String current = lines[i];
+                if(current.contains(".text"))
+                {
+                    sourcecode_section_state = 2;
+                    current_parse_line = i;
+                    break;
+                }
+                
+                Matcher m = variable_pattern.matcher(current);
+                
+                if(m.find())
+                {
+                    String var_name = m.group(1);
+                    String data_type = m.group(2);
+                    String value = m.group(3);
+                    int value_int = Integer.parseInt(value);
+
+                    if (current_memory_col > 7)
+                    {
+                        current_memory_row++;
+                        current_memory_col = 1;
+                    }
+                    data_segment_map.put(var_name, new int[]{current_memory_row, current_memory_col, value_int});
+                    current_memory_col++;
+                }
+                current_parse_line = i;
+                
+                
+            }
+            
+            for (Map.Entry<String, int[]> pair: data_segment_map.entrySet())
+            {
+                int row = pair.getValue()[0];
+                int column = pair.getValue()[1];
+                int value = pair.getValue()[2];
+                int[] data_value_binary = Convert.IntDecimalToBinary(value, 32);
+                String data_value_hex = Convert.BinaryToHex(data_value_binary);
+                memory_table.setValueAt(data_value_hex, row, column);
+            }
+            sourcecode_section_state = 2;
+        }
+        
+        if (sourcecode_section_state == 2)//initial state
+        {
+            PopulateProgramTextSegmentAddress(current_parse_line);
+        }
+        
         System.out.println("COMPILED");
     }//GEN-LAST:event_jBtnAssembleActionPerformed
 
     /***
      * Populates the jTableProgram table from the source code
      */
-    public void PopulateProgramTextSegmentAddress()
+    public void PopulateProgramTextSegmentAddress(int current_parse_line)
     {
         opcode = new Opcode(jTableRegister, jTableProgram);
         lines = jEditorPane1.getText().split("\n");
         this.program_table = (DefaultTableModel)jTableProgram.getModel();
-        for (int i = 0, j = 0; j < lines.length && i < 4096; i+=4, j++)
+        for (int i = 0, j = current_parse_line + 1; j < lines.length && i < 4096; i+=4, j++)
         {
             Vector cell = new Vector(); //this stores the value of each 'cell' per address row
             int[] decimal_to_binary = Convert.IntDecimalToBinary(i, 13); //13 bits == 4096 (according to specs)
             String binary_to_hex = Convert.BinaryToHex(decimal_to_binary);
-            cell.add("0x"+binary_to_hex);
+            cell.add(binary_to_hex);
             cell.add(""); //empty opcodes column for now
             cell.add(lines[j]);
             this.program_table.addRow(cell);
@@ -365,12 +460,10 @@ public class MainFrame extends javax.swing.JFrame {
         DefaultTableModel program_model = (DefaultTableModel)jTableProgram.getModel();
         
         //assign opcodes after loading the instructions in memory
-        for (int i = 0; i < jTableProgram.getRowCount(); i++)
+        for (int i = current_parse_line + 1, j = 0; i < lines.length; i++, j++)
         {
-//            Object pre_rd_value = jTableProgram.getValueAt(i, 0);
-//            String hex_value = (pre_rd_value == null) ? "" : pre_rd_value.toString();
-            String full_opcode = opcode.GenerateOpcode(lines[i], i);
-            program_model.setValueAt(full_opcode, i, 1);
+            String full_opcode = opcode.GenerateOpcode(lines[i], j);
+            program_model.setValueAt(full_opcode, j, 1);
         }
     }
     private void jBtnNextLineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnNextLineActionPerformed
@@ -470,10 +563,12 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTabbedPane jTabbedPane2;
     private javax.swing.JTabbedPane jTabbedPane3;
     private javax.swing.JTable jTableMemory;
+    private javax.swing.JTable jTablePipelineMap;
     private javax.swing.JTable jTableProgram;
     private javax.swing.JTable jTableRegister;
     private javax.swing.JTextPane jTextOutput;
