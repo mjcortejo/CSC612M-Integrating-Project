@@ -28,7 +28,7 @@ public class Opcode {
     JTable jTableProgram;
     
     /***
-     * 
+     * Constructor mandatory accepts jTableRegister and a jTableProgram parameter
      * @param jTableRegister_param
      * @param jTableProgram_param 
      */
@@ -132,6 +132,12 @@ public class Opcode {
     //we should probably dissect the pipeline's execution as each function (etc. Decode = 1 function, PC = 1 function, 
     //so we can reflect the state of the simulator back to the GUI
     
+    /***
+     * Generates Opcode from an instruction line
+     * @param line
+     * @param current_line
+     * @return 
+     */
     public String GenerateOpcode(String line, int current_line)
     {
         String full_opcode = "";
@@ -360,7 +366,11 @@ public class Opcode {
         }
     }
     
-    
+    /***
+     * Inverts the Binary Array
+     * @param binary_to_invert
+     * @return 
+     */
     public static int[] InvertBinary(int[] binary_to_invert)
     {
         int[] inverted_bin = new int[binary_to_invert.length];
@@ -371,8 +381,13 @@ public class Opcode {
         return inverted_bin;
     }
     
+    /***
+     * Prints the Binary Opcode
+     * @param opcode_to_print 
+     */
     public static void PrintBinaryOpcode(int[] opcode_to_print)
     {
+        opcode_to_print = InvertBinary(opcode_to_print);
         String bin = "";
         for (int i = opcode_to_print.length - 1; i >= 0 ; i--)
         {
@@ -381,6 +396,12 @@ public class Opcode {
         System.out.println(bin);
     }
     
+    /***
+     * Gets the row number for the jTableRegister using the register name
+     * @param register
+     * @return
+     * @throws Exception 
+     */
     public int GetRegisterTableRow(String register) throws Exception{
         int table_row = 0;
         if (register.charAt(0) == 'x') //this will check if the name called starts with xN or its original register name (etc. t0, a1)
@@ -404,6 +425,11 @@ public class Opcode {
         return table_row;
     }
     
+    /***
+     * Gets the Hex Value from jTableRegister using the table row index
+     * @param table_row
+     * @return 
+     */
     public String GetHexaValueFromTableRow(int table_row)
     {
         Object pre_rd_value = jTableRegister.getValueAt(table_row, 2);
@@ -414,6 +440,11 @@ public class Opcode {
         return rd_value;
     }
     
+    /***
+     * Gets the Hex address of a program line from the jTableProgram using table row index
+     * @param table_row
+     * @return 
+     */
     public String GetProgramHexValueFromTableRow(int table_row)
     {
         Object pre_rd_value = jTableProgram.getValueAt(table_row, 0);
@@ -424,6 +455,11 @@ public class Opcode {
         return rd_value;
     }
     
+    /***
+     * Finds the hex address using a label name from the jTableProgram
+     * @param label
+     * @return 
+     */
     public String FindLabelHexValueFromTableRow(String label)
     {
         String found_label = "";
@@ -445,13 +481,15 @@ public class Opcode {
         return found_label;
     }
     
+    /***
+     * Converts the Hex offset of an IMM to Binary
+     * @param full_param
+     * @return 
+     */
     public int[] GetIMMBinaryOfOffset(String full_param)
     { //accepts 0x100(x8) (0x100 is hexadecimal)
-//        String[] pre_offset_params = full_param.split("(");
-//        String offset = pre_offset_params[0]; //we should be able to get the 0x100 ez
         String offset = full_param.replace("0x", "");
         int[] offset_binary = Convert.HexaToBinary(offset, 12); //12 bits for the imm
         return offset_binary;
     }
-    
 }
