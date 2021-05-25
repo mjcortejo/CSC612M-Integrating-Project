@@ -55,9 +55,9 @@ public class Convert {
         {
             num_bits = 5;
         }
-        int[] binary_val = new int[5];
+        int[] binary_val = new int[num_bits];
         
-        if (hexa.isEmpty())
+        if (!hexa.isEmpty())
         {
             int i = 1;
             int dec_num = HexToDecimal(hexa);
