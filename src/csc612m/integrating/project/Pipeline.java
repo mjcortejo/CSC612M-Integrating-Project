@@ -95,12 +95,9 @@ public class Pipeline {
     
     //IF
     public void InstructionFetch(){
-        //IR <-- Mem[PC}
-        //NPC <-- PC + 4
-        String current_pc_hex = GetJTableValue(tableRegister, 32, 2);
-        
+//        String current_pc_hex = GetJTableValue(tableRegister, 32, 2);
         int ir_row_index = pipeline_internal_register_map.get("PC");
-        pipeline_internal_register_model.setValueAt(current_pc_hex, ir_row_index, 1);
+        String current_pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
         
         int current_pc_int = Convert.HexToDecimal(current_pc_hex);
         
@@ -112,6 +109,9 @@ public class Pipeline {
         int[] next_pc_bin = Convert.IntDecimalToBinary(next_pc, 32); //hex value has 32 bits
         String next_pc_hex = Convert.BinaryToHex(next_pc_bin);
         
+        ir_row_index = pipeline_internal_register_map.get("PC");
+        pipeline_internal_register_model.setValueAt(next_pc_hex, ir_row_index, 1);
+        
         ir_row_index = pipeline_internal_register_map.get("IF/ID.NPC");
         pipeline_internal_register_model.setValueAt(next_pc_hex, ir_row_index, 1);
         
@@ -119,6 +119,9 @@ public class Pipeline {
         
         int current_counter_pc = FindTableRowByCounterPC(current_pc_hex);
         program_model.setValueAt("IF", current_counter_pc, 3);
+        
+        ir_row_index = pipeline_internal_register_map.get("ID/EX.IR");
+        ir_opcode = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
     }
     
     //ID
@@ -132,7 +135,13 @@ public class Pipeline {
         
         int p_ir_model_int = Convert.HexToDecimal(p_ir_model_hex);
         
-        if (p_ir_model_int != 0)
+        ir_row_index = pipeline_internal_register_map.get("PC");
+        String current_npc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
+        int current_counter = FindTableRowByCounterPC(current_npc_hex);
+        
+        String current_state = GetJTableValue(tableProgram, current_counter, 3);
+        
+        if (!current_state.equals("IF"))
         {
             ir_row_index = pipeline_internal_register_map.get("IF/ID.NPC");
             String current_pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);

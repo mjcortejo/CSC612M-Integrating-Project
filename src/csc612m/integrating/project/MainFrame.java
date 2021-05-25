@@ -275,23 +275,22 @@ public class MainFrame extends javax.swing.JFrame {
 
         jTablePipelineRegister.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {"IF/ID.IR", null},
-                {"IF/ID.NPC", null},
-                {"PC", null},
-                {"ID/EX.A", null},
-                {"ID/EX.B", null},
-                {"ID/EX.IMM", null},
-                {"ID/EX.IR", null},
-                {"ID/EX.NPC", null},
-                {"EX/MEM.ALUoutput", null},
-                {"EX/MEM.IR", null},
-                {"EX/MEM.B", null},
-                {"EX/MEM.COND", null},
-                {"MEM/WB.LMD", null},
-                {"MEM/WB.IR", null},
-                {"MEM/WB.ALUoutput", null},
-                {"MEM[EX/MEM.ALUoutput]", null},
-                {null, null}
+                {"IF/ID.IR", "00000000"},
+                {"IF/ID.NPC", "00000000"},
+                {"PC", "00000000"},
+                {"ID/EX.A", "00000000"},
+                {"ID/EX.B", "00000000"},
+                {"ID/EX.IMM", "00000000"},
+                {"ID/EX.IR", "00000000"},
+                {"ID/EX.NPC", "00000000"},
+                {"EX/MEM.ALUoutput", "00000000"},
+                {"EX/MEM.IR", "00000000"},
+                {"EX/MEM.B", "00000000"},
+                {"EX/MEM.COND", "00000000"},
+                {"MEM/WB.LMD", "00000000"},
+                {"MEM/WB.IR", "00000000"},
+                {"MEM/WB.ALUoutput", "00000000"},
+                {"MEM[EX/MEM.ALUoutput]", "00000000"}
             },
             new String [] {
                 "Name", "Value"
@@ -491,7 +490,7 @@ public class MainFrame extends javax.swing.JFrame {
         lines = jEditorPane1.getText().split("\n");
         this.program_table = (DefaultTableModel)jTableProgram.getModel();
         this.pipeline_map_table = (DefaultTableModel)jTablePipelineMap.getModel();
-        for (int i = 0, j = current_parse_line + 1; j < lines.length && i < 4096; i+=4, j++)
+        for (int i = 4096, j = current_parse_line + 1; j < lines.length && i < 8192; i+=4, j++)
         {
             Vector cell = new Vector(); //this stores the value of each 'cell' per address row
             int[] decimal_to_binary = Convert.IntDecimalToBinary(i, 13); //13 bits == 4096 (according to specs)
