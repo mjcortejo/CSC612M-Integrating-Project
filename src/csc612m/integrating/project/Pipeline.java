@@ -75,12 +75,29 @@ public class Pipeline {
     
     public void Cycle()
     {
-        cycles++;
-        pipeline_map_model.addColumn("Cycle "+cycles);
+        int ir_row_index = pipeline_internal_register_map.get("PC");
+        String current_pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
+        
+        int current_counter_pc = FindTableRowByCounterPC(current_pc_hex);
+        String current_state = GetJTableValue(tableProgram, current_counter_pc, 3);
+        
+        //store each PC in a hashmap
+        //each hashmap will act like its own thread
+        //each hashmap value will be updated independently
+        
+//        if (current_state != "IF")
+//        {
+//            InstructionFetch();
+//        }
+//        else
+//        {
+//            if (current_state != "ID")
+//            {
+//                InstructionDecode();
+//            }
+//        }
         //extract instruction using current NPC
         //get first program counter to see if it matches in ID
-        InstructionFetch();
-        InstructionDecode();
     }
     
     public String GetJTableValue(JTable targetTable, int row, int column)
@@ -101,9 +118,9 @@ public class Pipeline {
         
         int current_pc_int = Convert.HexToDecimal(current_pc_hex);
         
-        String ir_opcode = GetJTableValue(tableProgram, current_pc_int, 1);
+        String if_id_ir_opcode = GetJTableValue(tableProgram, ir_row_index, 1);
         ir_row_index = pipeline_internal_register_map.get("IF/ID.IR");
-        pipeline_internal_register_model.setValueAt(ir_opcode, ir_row_index, 1);
+        pipeline_internal_register_model.setValueAt(if_id_ir_opcode, ir_row_index, 1);
         
         int next_pc = current_pc_int + 4;
         int[] next_pc_bin = Convert.IntDecimalToBinary(next_pc, 32); //hex value has 32 bits
@@ -120,8 +137,8 @@ public class Pipeline {
         int current_counter_pc = FindTableRowByCounterPC(current_pc_hex);
         program_model.setValueAt("IF", current_counter_pc, 3);
         
-        ir_row_index = pipeline_internal_register_map.get("ID/EX.IR");
-        ir_opcode = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
+//        ir_row_index = pipeline_internal_register_map.get("ID/EX.IR");
+//        String id_ex_ir_opcode = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
     }
     
     //ID
@@ -135,35 +152,36 @@ public class Pipeline {
         
         int p_ir_model_int = Convert.HexToDecimal(p_ir_model_hex);
         
-        ir_row_index = pipeline_internal_register_map.get("PC");
-        String current_npc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
-        int current_counter = FindTableRowByCounterPC(current_npc_hex);
+//        ir_row_index = pipeline_internal_register_map.get("PC");
+//        String current_npc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
+//        int current_counter = FindTableRowByCounterPC(current_npc_hex);
+//        
+//        String current_state = GetJTableValue(tableProgram, current_counter, 3);
         
-        String current_state = GetJTableValue(tableProgram, current_counter, 3);
-        
-        if (!current_state.equals("IF"))
-        {
-            ir_row_index = pipeline_internal_register_map.get("IF/ID.NPC");
-            String current_pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
+        ir_row_index = pipeline_internal_register_map.get("IF/ID.NPC");
+        String current_pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
 
-            ir_row_index = pipeline_internal_register_map.get("ID/EX.NPC");
-            pipeline_internal_register_model.setValueAt(current_pc_hex, ir_row_index, 1);
-            
-            ir_row_index = pipeline_internal_register_map.get("ID/EX.A");
-            int[] id_ex_a_binary = GetBinaryFromOpcode(id_ir_full_binary, 19, 15);
-            String id_ex_a_hex = Convert.BinaryToHex(id_ex_a_binary);
-            pipeline_internal_register_model.setValueAt(id_ex_a_hex, ir_row_index, 1);
-            
-            ir_row_index = pipeline_internal_register_map.get("ID/EX.B");
-            int[] id_ex_b_binary = GetBinaryFromOpcode(id_ir_full_binary, 24, 20);
-            String id_ex_b_hex = Convert.BinaryToHex(id_ex_a_binary);
-            pipeline_internal_register_model.setValueAt(id_ex_b_hex, ir_row_index, 1);
-            
-            ir_row_index = pipeline_internal_register_map.get("ID/EX.IMM");
-            int[] id_ex_imm_binary = GetBinaryFromOpcode(id_ir_full_binary, 31, 20);
-            String id_ex_imm_hex = Convert.BinaryToHex(id_ex_imm_binary);
-            pipeline_internal_register_model.setValueAt(id_ex_imm_hex, ir_row_index, 1);
-        }
+        ir_row_index = pipeline_internal_register_map.get("ID/EX.NPC");
+        pipeline_internal_register_model.setValueAt(current_pc_hex, ir_row_index, 1);
+
+        ir_row_index = pipeline_internal_register_map.get("ID/EX.A");
+        int[] id_ex_a_binary = GetBinaryFromOpcode(id_ir_full_binary, 19, 15);
+        String id_ex_a_hex = Convert.BinaryToHex(id_ex_a_binary);
+        pipeline_internal_register_model.setValueAt(id_ex_a_hex, ir_row_index, 1);
+
+        ir_row_index = pipeline_internal_register_map.get("ID/EX.B");
+        int[] id_ex_b_binary = GetBinaryFromOpcode(id_ir_full_binary, 24, 20);
+        String id_ex_b_hex = Convert.BinaryToHex(id_ex_a_binary);
+        pipeline_internal_register_model.setValueAt(id_ex_b_hex, ir_row_index, 1);
+
+        ir_row_index = pipeline_internal_register_map.get("ID/EX.IMM");
+        int[] id_ex_imm_binary = GetBinaryFromOpcode(id_ir_full_binary, 31, 20);
+        String id_ex_imm_hex = Convert.BinaryToHex(id_ex_imm_binary);
+        pipeline_internal_register_model.setValueAt(id_ex_imm_hex, ir_row_index, 1);
+        
+        int current_counter_pc = FindTableRowByCounterPC(current_pc_hex);
+        program_model.setValueAt("ID", current_counter_pc, 3);
+
     }
     
     //EX
