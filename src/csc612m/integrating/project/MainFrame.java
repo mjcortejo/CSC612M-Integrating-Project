@@ -410,7 +410,7 @@ public class MainFrame extends javax.swing.JFrame {
                         current_memory_row++;
                         current_memory_col = 1;
                     }
-                    data_segment_map.put(var_name, new int[]{current_memory_row, current_memory_col, value_int});
+                    data_segment_map.put(var_name.replace(":", ""), new int[]{current_memory_row, current_memory_col, value_int});
                     current_memory_col++;
                 }
                 current_parse_line = i;
@@ -438,12 +438,14 @@ public class MainFrame extends javax.swing.JFrame {
         System.out.println("COMPILED");
     }//GEN-LAST:event_jBtnAssembleActionPerformed
 
+
     /***
      * Populates the jTableProgram table from the source code
+     * @param current_parse_line 
      */
     public void PopulateProgramTextSegmentAddress(int current_parse_line)
     {
-        opcode = new Opcode(jTableRegister, jTableProgram);
+        opcode = new Opcode(jTableRegister, jTableProgram, jTableMemory, data_segment_map);
         lines = jEditorPane1.getText().split("\n");
         this.program_table = (DefaultTableModel)jTableProgram.getModel();
         for (int i = 0, j = current_parse_line + 1; j < lines.length && i < 4096; i+=4, j++)
