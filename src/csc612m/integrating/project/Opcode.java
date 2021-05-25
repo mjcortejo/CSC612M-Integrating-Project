@@ -6,6 +6,7 @@
 package csc612m.integrating.project;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Vector;
 import java.util.regex.Matcher;
@@ -144,7 +145,13 @@ public class Opcode {
         binary_opcode = new int[32];
         try
         {
+            //checks instruction
             String[] parsed_line = line.split(" ");
+            
+            if (!instruction_opcode_map.containsKey(parsed_line[0])) //if the first param
+            {
+                parsed_line = Arrays.copyOfRange(parsed_line, 1, parsed_line.length); //restructures the array index to original without changing the code below
+            }
 
             String instruction = parsed_line[0];
             ArrayList<String> pre_params = new ArrayList<String>();
@@ -481,7 +488,7 @@ public class Opcode {
             Object pre_current_label = jTableProgram.getValueAt(i, 2); //index 2 is the actual label row itself
             String current_label = (pre_current_label == null) ? "" : pre_current_label.toString();
             
-            if (temp_label.equals(current_label))
+            if (current_label.contains(temp_label))
             {
                 Object pre_found_label = jTableProgram.getValueAt(i, 0); //index 0 is the hexadecimal value of the label
                 found_label = (pre_found_label == null) ? "" : pre_found_label.toString();
