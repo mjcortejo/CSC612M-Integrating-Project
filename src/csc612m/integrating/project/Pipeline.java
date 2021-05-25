@@ -76,7 +76,9 @@ public class Pipeline {
     public void Cycle()
     {
         cycles++;
+        pipeline_map_model.addColumn("Cycle "+cycles);
         //extract instruction using current NPC
+        //get first program counter to see if it matches in ID
         InstructionFetch();
         InstructionDecode();
     }
@@ -114,6 +116,9 @@ public class Pipeline {
         pipeline_internal_register_model.setValueAt(next_pc_hex, ir_row_index, 1);
         
         register_model.setValueAt(next_pc_hex, 32, 0);
+        
+        int current_counter_pc = FindTableRowByCounterPC(current_pc_hex);
+        program_model.setValueAt("IF", current_counter_pc, 3);
     }
     
     //ID
@@ -123,6 +128,8 @@ public class Pipeline {
         //Imm <- {Sign_extend[IR 31..20] (immediate ALU) | sign_extend[IR 31..25, 11..7] (branch/store
         int ir_row_index = pipeline_internal_register_map.get("IF/ID.IR");
         String p_ir_model_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
+        int[] id_ir_full_binary = Convert.HexaToBinary(p_ir_model_hex, 32);
+        
         int p_ir_model_int = Convert.HexToDecimal(p_ir_model_hex);
         
         if (p_ir_model_int != 0)
@@ -133,7 +140,20 @@ public class Pipeline {
             ir_row_index = pipeline_internal_register_map.get("ID/EX.NPC");
             pipeline_internal_register_model.setValueAt(current_pc_hex, ir_row_index, 1);
             
+            ir_row_index = pipeline_internal_register_map.get("ID/EX.A");
+            int[] id_ex_a_binary = GetBinaryFromOpcode(id_ir_full_binary, 19, 15);
+            String id_ex_a_hex = Convert.BinaryToHex(id_ex_a_binary);
+            pipeline_internal_register_model.setValueAt(id_ex_a_hex, ir_row_index, 1);
             
+            ir_row_index = pipeline_internal_register_map.get("ID/EX.B");
+            int[] id_ex_b_binary = GetBinaryFromOpcode(id_ir_full_binary, 24, 20);
+            String id_ex_b_hex = Convert.BinaryToHex(id_ex_a_binary);
+            pipeline_internal_register_model.setValueAt(id_ex_b_hex, ir_row_index, 1);
+            
+            ir_row_index = pipeline_internal_register_map.get("ID/EX.IMM");
+            int[] id_ex_imm_binary = GetBinaryFromOpcode(id_ir_full_binary, 31, 20);
+            String id_ex_imm_hex = Convert.BinaryToHex(id_ex_imm_binary);
+            pipeline_internal_register_model.setValueAt(id_ex_imm_hex, ir_row_index, 1);
         }
     }
     
@@ -143,9 +163,30 @@ public class Pipeline {
         //ALU Operations
     }
     
+    public void Memory()
+    {
+    }
+    
     //WB
     public void WriteBack(){
         //Regs[11..7] <- ALU Output
+    }
+    
+    public int FindTableRowByCounterPC(String pc_hex)
+    {
+        int found_row = -1;
+        for (int i = 0; i < tableProgram.getRowCount(); i++)
+        {
+            Object pre_current_count = tableProgram.getValueAt(i, 0); //index 2 is the actual label row itself
+            String current_count = (pre_current_count == null) ? "" : pre_current_count.toString();
+            
+            if (current_count.contains(pc_hex))
+            {
+                found_row = i;
+                break;
+            }
+        }
+        return found_row;
     }
     
     public int GetRegisterMapIndex(String register_name)
@@ -153,12 +194,14 @@ public class Pipeline {
         return pipeline_internal_register_map.get(register_name);
     }
     
-    public static void AddBinaryToOpcode(int[] opcode_to_apply, int[] binary_opcode, int upper_bound, int lower_bound)
+    public int[] GetBinaryFromOpcode(int[] opcode_to_find, int upper_bound, int lower_bound)
     {
-        for (int i = upper_bound, j = 0; i >= lower_bound; i--,j++)
+        int[] new_binary = new int[upper_bound + 1 - lower_bound];
+        for (int i = upper_bound, j = 1; i >= lower_bound; i--,j++)
         {
-            opcode_to_apply[31-i] = binary_opcode[j];
+            new_binary[new_binary.length-j] = opcode_to_find[31-i];
         }
+        return new_binary;
     }
     
     public void load_word(String rd, String rs1)
