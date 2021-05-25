@@ -276,8 +276,8 @@ public class MainFrame extends javax.swing.JFrame {
         jTablePipelineRegister.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {"IF/ID.IR", "00000000"},
-                {"IF/ID.NPC", "00000000"},
-                {"PC", "00000000"},
+                {"IF/ID.NPC", "00001000"},
+                {"PC", "00001000"},
                 {"ID/EX.A", "00000000"},
                 {"ID/EX.B", "00000000"},
                 {"ID/EX.IMM", "00000000"},

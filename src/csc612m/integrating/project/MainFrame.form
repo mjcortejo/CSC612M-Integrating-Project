@@ -496,8 +496,8 @@
                         </Column>
                         <Column editable="true" title="Value" type="java.lang.Object">
                           <Data value="00000000"/>
-                          <Data value="00000000"/>
-                          <Data value="00000000"/>
+                          <Data value="00001000"/>
+                          <Data value="00001000"/>
                           <Data value="00000000"/>
                           <Data value="00000000"/>
                           <Data value="00000000"/>
