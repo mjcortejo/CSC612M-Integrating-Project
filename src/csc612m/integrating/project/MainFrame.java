@@ -111,8 +111,11 @@ public class MainFrame extends javax.swing.JFrame {
         jTableMemory = new javax.swing.JTable();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTableProgram = new javax.swing.JTable();
+        jTabbedPane4 = new javax.swing.JTabbedPane();
         jScrollPane6 = new javax.swing.JScrollPane();
         jTablePipelineMap = new javax.swing.JTable();
+        jScrollPane8 = new javax.swing.JScrollPane();
+        jTablePipelineRegister = new javax.swing.JTable();
         jBtnRun = new javax.swing.JButton();
         jBtnNextLine = new javax.swing.JButton();
         jBtnPrevLine = new javax.swing.JButton();
@@ -259,7 +262,10 @@ public class MainFrame extends javax.swing.JFrame {
 
         jTablePipelineMap.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-
+                {},
+                {},
+                {},
+                {}
             },
             new String [] {
 
@@ -267,7 +273,45 @@ public class MainFrame extends javax.swing.JFrame {
         ));
         jScrollPane6.setViewportView(jTablePipelineMap);
 
-        jTabbedPane2.addTab("Pipeline Map", jScrollPane6);
+        jTabbedPane4.addTab("Map", jScrollPane6);
+
+        jTablePipelineRegister.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {"IF/ID.IR", null},
+                {"IF/ID.NPC", null},
+                {"PC", null},
+                {"ID/EX.A", null},
+                {"ID/EX.B", null},
+                {"ID/EX.IMM", null},
+                {"ID/EX.IR", null},
+                {"ID/EX.NPC", null},
+                {"EX/MEM.ALUoutput", null},
+                {"EX/MEM.IR", null},
+                {"EX/MEM.B", null},
+                {"EX/MEM.COND", null},
+                {"MEM/WB.LMD", null},
+                {"MEM/WB.IR", null},
+                {"MEM/WB.ALUoutput", null},
+                {"MEM[EX/MEM.ALUoutput]", null},
+                {null, null}
+            },
+            new String [] {
+                "Name", "Value"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.Object.class
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+        });
+        jScrollPane8.setViewportView(jTablePipelineRegister);
+
+        jTabbedPane4.addTab("Registers", jScrollPane8);
+
+        jTabbedPane2.addTab("Pipelining", jTabbedPane4);
 
         jBtnRun.setText("Run");
         jBtnRun.addActionListener(new java.awt.event.ActionListener() {
@@ -566,11 +610,14 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
+    private javax.swing.JScrollPane jScrollPane8;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTabbedPane jTabbedPane2;
     private javax.swing.JTabbedPane jTabbedPane3;
+    private javax.swing.JTabbedPane jTabbedPane4;
     private javax.swing.JTable jTableMemory;
     private javax.swing.JTable jTablePipelineMap;
+    private javax.swing.JTable jTablePipelineRegister;
     private javax.swing.JTable jTableProgram;
     private javax.swing.JTable jTableRegister;
     private javax.swing.JTextPane jTextOutput;
