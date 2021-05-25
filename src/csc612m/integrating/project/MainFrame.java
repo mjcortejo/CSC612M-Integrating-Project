@@ -33,7 +33,7 @@ public class MainFrame extends javax.swing.JFrame {
     public MainFrame() {
         initComponents();
 
-        pipeline = new Pipeline(jTableRegister, jTableProgram);
+        pipeline = new Pipeline(jTableRegister, jTableProgram, jTablePipelineMap, jTablePipelineRegister);
         data_segment_map = new HashMap<String, int[]>();
         
         register_alias_map = new HashMap<String, Integer>() {{ //this is used when the instruction is invoking the alias name which will point to a row number (the integer value)
@@ -128,38 +128,38 @@ public class MainFrame extends javax.swing.JFrame {
 
         jTableRegister.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {"x0", "zero", "0x00000000"},
-                {"x1", "ra", "0x00000000"},
-                {"x2", "sp", "0x00000000"},
-                {"x3", "gp", "0x00000000"},
-                {"x4", "tp", "0x00000000"},
-                {"x5", "t0", "0x00000000"},
-                {"x6", "t1", "0x00000000"},
-                {"x7", "t2", "0x00000000"},
-                {"x8", "s0", "0x00000000"},
-                {"x9", "s1", "0x00000000"},
-                {"x10", "a0", "0x00000000"},
-                {"x11", "a1", "0x00000000"},
-                {"x12", "a2", "0x00000000"},
-                {"x13", "a3", "0x00000000"},
-                {"x14", "a4", "0x00000000"},
-                {"x15", "a5", "0x00000000"},
-                {"x16", "a6", "0x00000000"},
-                {"x17", "a7", "0x00000000"},
-                {"x18", "s2", "0x00000000"},
-                {"x19", "s3", "0x00000000"},
-                {"x20", "s4", "0x00000000"},
-                {"x21", "s5", "0x00000000"},
-                {"x22", "s6", "0x00000000"},
-                {"x23", "s7", "0x00000000"},
-                {"x24", "s8", "0x00000000"},
-                {"x25", "s9", "0x00000000"},
-                {"x26", "s10", "0x00000000"},
-                {"x27", "s11", "0x00000000"},
-                {"x28", "t3", "0x00000000"},
-                {"x29", "t4", "0x00000000"},
-                {"x30", "t5", "0x00000000"},
-                {"x31", "t6", "0x00000000"},
+                {"x0", "zero", "00000000"},
+                {"x1", "ra", "00000000"},
+                {"x2", "sp", "00000000"},
+                {"x3", "gp", "00000000"},
+                {"x4", "tp", "00000000"},
+                {"x5", "t0", "00000000"},
+                {"x6", "t1", "00000000"},
+                {"x7", "t2", "00000000"},
+                {"x8", "s0", "00000000"},
+                {"x9", "s1", "00000000"},
+                {"x10", "a0", "00000000"},
+                {"x11", "a1", "00000000"},
+                {"x12", "a2", "00000000"},
+                {"x13", "a3", "00000000"},
+                {"x14", "a4", "00000000"},
+                {"x15", "a5", "00000000"},
+                {"x16", "a6", "00000000"},
+                {"x17", "a7", "00000000"},
+                {"x18", "s2", "00000000"},
+                {"x19", "s3", "00000000"},
+                {"x20", "s4", "00000000"},
+                {"x21", "s5", "00000000"},
+                {"x22", "s6", "00000000"},
+                {"x23", "s7", "00000000"},
+                {"x24", "s8", "00000000"},
+                {"x25", "s9", "00000000"},
+                {"x26", "s10", "00000000"},
+                {"x27", "s11", "00000000"},
+                {"x28", "t3", "00000000"},
+                {"x29", "t4", "00000000"},
+                {"x30", "t5", "00000000"},
+                {"x31", "t6", "00000000"},
                 {null, "pc", "0x00000000"}
             },
             new String [] {
@@ -595,6 +595,7 @@ public class MainFrame extends javax.swing.JFrame {
     {
         //parse or read line here
 //        opcode.GenerateOpcode(lines[current_line], jTableRegister);
+        pipeline.Cycle();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
