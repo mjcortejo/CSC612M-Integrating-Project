@@ -27,16 +27,21 @@ public class Opcode {
     
     JTable jTableRegister;
     JTable jTableProgram;
+    JTable jTableMemory;
+    HashMap<String, int[]> data_segment_map;
     
     /***
      * Constructor mandatory accepts jTableRegister and a jTableProgram parameter
      * @param jTableRegister_param
      * @param jTableProgram_param 
      */
-    public Opcode(JTable jTableRegister_param, JTable jTableProgram_param)
+    public Opcode(JTable jTableRegister_param, JTable jTableProgram_param, JTable jTableMemory_param, HashMap data_segment_map_param)
     {
         jTableRegister = jTableRegister_param;
         jTableProgram = jTableProgram_param;
+        jTableMemory = jTableMemory_param;
+        
+        data_segment_map = data_segment_map_param;
         
         instruction_opcode_map = new HashMap<String, int[]>() {{
             put("lw",  new int[] {0,0,0,0,0,1,1});
@@ -148,7 +153,7 @@ public class Opcode {
             //checks instruction
             String[] parsed_line = line.split(" ");
             
-            if (!instruction_opcode_map.containsKey(parsed_line[0])) //if the first param
+            if (!instruction_opcode_map.containsKey(parsed_line[0])) //if the first param is a label, then remove the label from array
             {
                 parsed_line = Arrays.copyOfRange(parsed_line, 1, parsed_line.length); //restructures the array index to original without changing the code below
             }
@@ -184,32 +189,38 @@ public class Opcode {
             int[] rd_binary = new int[5]; //5 bits // this is the IMM in the opcode location
             int[] rs1_binary = new int[5]; //5 bits // 
             int[] rs2_binary = new int[5]; //5 bits
+            int[] imm_binary;
             
             switch(instruction.toLowerCase())
             {
                 case "lw":
                     rd_table_row = GetRegisterTableRow(params[0]);
-                    rs1_table_row = GetRegisterTableRow(params[1]);
-                    hexa_value = GetHexaValueFromTableRow(rs1_table_row);
-                    rs1_binary = Convert.HexaToBinary(hexa_value);
                     rd_binary = Convert.DecimalToBinary(Integer.toString(rd_table_row)); 
                     
+                    int row_index = data_segment_map.get(params[1])[0];
+                    int col_index = data_segment_map.get(params[1])[1];
+                    rs1_binary = GetIMMBinaryOfOffset(params[1]);
+                    
+                    String imm_hex = GetMemoryHexValueFromTableRow(row_index, col_index);
+                    imm_binary = Convert.HexaToBinary(imm_hex, 12);
+
                     AddBinaryToOpcode(binary_opcode, instruction_opcode, 6, 0);
                     AddBinaryToOpcode(binary_opcode, rd_binary, 11, 7);
                     AddBinaryToOpcode(binary_opcode, funct3_opcode, 14, 12);
                     AddBinaryToOpcode(binary_opcode, rs1_binary, 19, 15);
+                    AddBinaryToOpcode(binary_opcode, imm_binary, 31, 20);
                     
                     binary_opcode = InvertBinary(binary_opcode);
                     full_opcode = Convert.BinaryToHex(binary_opcode);
                     break;
                 case "sw":
-                    String[] pre_offset_params = params[1].split("\\("); //this removes the ( in (x8) <-- example
-                    String offset = pre_offset_params[0]; //we should be able to get the offset address
-                    String rs1_register = pre_offset_params[1].replace(")", ""); // we will remove the closing parenthesis from x8)
+//                    String[] pre_offset_params = params[1].split("\\("); //this removes the ( in (x8) <-- example
+//                    String offset = pre_offset_params[0]; //we should be able to get the offset address
+                    String rs1_register = GetTargetOffsetRegister(params[1]);// we will remove the closing parenthesis from x8)
                     String rs2_register = params[0];
                     
                     rd_table_row = GetRegisterTableRow(params[0]);
-                    rd_binary = GetIMMBinaryOfOffset(offset);
+                    rd_binary = GetIMMBinaryOfOffset(params[1]);
                     rs1_table_row = GetRegisterTableRow(rs1_register);
                     rs1_binary = Convert.IntDecimalToBinary(rs1_table_row);
                     rs2_table_row = GetRegisterTableRow(rs2_register); //rs2_register is the rd, in sw instruction
@@ -236,9 +247,9 @@ public class Opcode {
                     rd_binary = Convert.DecimalToBinary(Integer.toString(rd_table_row)); 
                     rs1_table_row = GetRegisterTableRow(params[1]);
                     rs2_table_row = GetRegisterTableRow(params[2]);
-                    hexa_value = GetHexaValueFromTableRow(rs1_table_row);
+                    hexa_value = GetRegisterHexValueFromTableRow(rs1_table_row);
                     rs1_binary = Convert.HexaToBinary(hexa_value);
-                    hexa_value = GetHexaValueFromTableRow(rs2_table_row);
+                    hexa_value = GetRegisterHexValueFromTableRow(rs2_table_row);
                     rs2_binary = Convert.HexaToBinary(hexa_value);
                     
                     AddBinaryToOpcode(binary_opcode, instruction_opcode, 6, 0);
@@ -259,9 +270,9 @@ public class Opcode {
                     rd_table_row = GetRegisterTableRow(params[0]);
                     rd_binary = Convert.DecimalToBinary(Integer.toString(rd_table_row)); 
                     rs1_table_row = GetRegisterTableRow(params[1]);
-                    hexa_value = GetHexaValueFromTableRow(rs1_table_row);
+                    hexa_value = GetRegisterHexValueFromTableRow(rs1_table_row);
                     rs1_binary = Convert.HexaToBinary(hexa_value);
-                    int[] imm_binary = Convert.DecimalToBinary(params[2], 12);
+                    imm_binary = Convert.DecimalToBinary(params[2], 12);
                     
                     AddBinaryToOpcode(binary_opcode, instruction_opcode, 6, 0);
                     AddBinaryToOpcode(binary_opcode, rd_binary, 11, 7);
@@ -277,7 +288,7 @@ public class Opcode {
                     rd_table_row = GetRegisterTableRow(params[0]);
                     rd_binary = Convert.DecimalToBinary(Integer.toString(rd_table_row)); 
                     rs1_table_row = GetRegisterTableRow(params[1]);
-                    hexa_value = GetHexaValueFromTableRow(rs1_table_row);
+                    hexa_value = GetRegisterHexValueFromTableRow(rs1_table_row);
                     rs1_binary = Convert.HexaToBinary(hexa_value);
                     
                     int[] shamt_binary = Convert.DecimalToBinary(params[2]);
@@ -299,7 +310,7 @@ public class Opcode {
                     funct7_opcode = new int[7]; //ignore funct7 mapping for branches
                     
                     rs1_table_row = GetRegisterTableRow(params[1]);
-                    hexa_value = GetHexaValueFromTableRow(rs1_table_row);
+                    hexa_value = GetRegisterHexValueFromTableRow(rs1_table_row);
                     rs1_binary = Convert.HexaToBinary(hexa_value);
                     
                     String current_line_hexadecimal = GetProgramHexValueFromTableRow(current_line);
@@ -449,7 +460,7 @@ public class Opcode {
      * @param table_row
      * @return 
      */
-    public String GetHexaValueFromTableRow(int table_row)
+    public String GetRegisterHexValueFromTableRow(int table_row)
     {
         Object pre_rd_value = jTableRegister.getValueAt(table_row, 2);
         String rd_value = (pre_rd_value == null) ? "" : pre_rd_value.toString();
@@ -457,6 +468,14 @@ public class Opcode {
         rd_value = rd_value.replace("0x", ""); //removes the radix
         
         return rd_value;
+    }
+    
+    public String GetRegisterHexValueFromRegisterName(String register_name) throws Exception
+    {
+        int register_int = GetRegisterTableRow(register_name);
+        String hex_value = GetRegisterHexValueFromTableRow(register_int);
+        
+        return hex_value;
     }
     
     /***
@@ -467,6 +486,16 @@ public class Opcode {
     public String GetProgramHexValueFromTableRow(int table_row)
     {
         Object pre_rd_value = jTableProgram.getValueAt(table_row, 0);
+        String rd_value = (pre_rd_value == null) ? "" : pre_rd_value.toString();
+        
+        rd_value = rd_value.replace("0x", ""); //removes the radix
+        
+        return rd_value;
+    }
+    
+    public String GetMemoryHexValueFromTableRow(int row, int col)
+    {
+        Object pre_rd_value = jTableMemory.getValueAt(row, col);
         String rd_value = (pre_rd_value == null) ? "" : pre_rd_value.toString();
         
         rd_value = rd_value.replace("0x", ""); //removes the radix
@@ -507,8 +536,31 @@ public class Opcode {
      */
     public int[] GetIMMBinaryOfOffset(String full_param)
     { //accepts 0x100(x8) (0x100 is hexadecimal)
-        String offset = full_param.replace("0x", "");
+        String[] pre_offset_params = full_param.split("\\("); //this removes the ( in (x8) <-- example
+        String offset = pre_offset_params[0]; //we should be able to get the offset address
+        try
+        {
+            String target = pre_offset_params[1]; //this will error, if there is no offset it's usually a source
+        }
+        catch(Exception e)
+        {
+            offset = "0"; //force binary to zero
+        }
+        
+        offset = offset.replace("0x", "");
         int[] offset_binary = Convert.HexaToBinary(offset, 12); //12 bits for the imm
         return offset_binary;
+    }
+    
+    public String GetTargetOffsetRegister(String full_param) throws Exception
+    {
+        String[] pre_offset_params = full_param.split("\\("); //this removes the ( in (x8) <-- example
+        String target_register_name = pre_offset_params[1]; //we should be able to get the offset address
+        target_register_name = target_register_name.replace(")", ""); // we will remove the closing parenthesis from x8)
+       
+//        String target_hex_value = GetRegisterHexValueFromRegisterName(target_register_name);
+//        int[] target_binary = Convert.HexaToBinary(target_hex_value);
+        
+        return target_register_name;
     }
 }
