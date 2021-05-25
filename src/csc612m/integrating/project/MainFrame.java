@@ -27,6 +27,7 @@ public class MainFrame extends javax.swing.JFrame {
     Opcode opcode;
     DefaultTableModel memory_table;
     DefaultTableModel program_table;
+    DefaultTableModel pipeline_map_table;
     HashMap<String, Integer> register_alias_map;
     HashMap<String, int[]> data_segment_map;
     
@@ -240,11 +241,11 @@ public class MainFrame extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Address", "Opcode", "Instruction"
+                "Address", "Opcode", "Instruction", "Stage"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false
+                false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -262,13 +263,10 @@ public class MainFrame extends javax.swing.JFrame {
 
         jTablePipelineMap.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {},
-                {},
-                {},
-                {}
+
             },
             new String [] {
-
+                "Instruction", "Address"
             }
         ));
         jScrollPane6.setViewportView(jTablePipelineMap);
@@ -400,8 +398,6 @@ public class MainFrame extends javax.swing.JFrame {
     private void jBtnAssembleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnAssembleActionPerformed
         // TODO add your handling code here:
         lines = jEditorPane1.getText().split("\n");
-        lines_length = lines.length;
-        current_line = 0;
         
         this.memory_table = (DefaultTableModel)jTableMemory.getModel();
         
@@ -474,10 +470,12 @@ public class MainFrame extends javax.swing.JFrame {
             sourcecode_section_state = 2;
         }
         
-        if (sourcecode_section_state == 2)//initial state
+        if (sourcecode_section_state == 2)//final state
         {
             PopulateProgramTextSegmentAddress(current_parse_line);
         }
+        
+        
         
         System.out.println("COMPILED");
     }//GEN-LAST:event_jBtnAssembleActionPerformed
@@ -492,6 +490,7 @@ public class MainFrame extends javax.swing.JFrame {
         opcode = new Opcode(jTableRegister, jTableProgram, jTableMemory, data_segment_map);
         lines = jEditorPane1.getText().split("\n");
         this.program_table = (DefaultTableModel)jTableProgram.getModel();
+        this.pipeline_map_table = (DefaultTableModel)jTablePipelineMap.getModel();
         for (int i = 0, j = current_parse_line + 1; j < lines.length && i < 4096; i+=4, j++)
         {
             Vector cell = new Vector(); //this stores the value of each 'cell' per address row
@@ -500,7 +499,14 @@ public class MainFrame extends javax.swing.JFrame {
             cell.add(binary_to_hex);
             cell.add(""); //empty opcodes column for now
             cell.add(lines[j]);
+            
+            Vector pipeline_cell = new Vector();
+            pipeline_cell.add(binary_to_hex);
+            pipeline_cell.add(lines[j]);
+            
             this.program_table.addRow(cell);
+            this.pipeline_map_table.addRow(pipeline_cell);
+            
         }
         
         DefaultTableModel program_model = (DefaultTableModel)jTableProgram.getModel();
@@ -514,15 +520,7 @@ public class MainFrame extends javax.swing.JFrame {
     }
     private void jBtnNextLineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnNextLineActionPerformed
         // TODO add your handling code here:
-        if (current_line > lines_length)
-        {
-            System.out.println("End of text");
-        }
-        else
-        {
-            ReadCurrentLine();
-            current_line++;   
-        }
+        ReadCurrentLine();
     }//GEN-LAST:event_jBtnNextLineActionPerformed
 
     /**
@@ -531,28 +529,19 @@ public class MainFrame extends javax.swing.JFrame {
      */
     private void jBtnPrevLineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnPrevLineActionPerformed
         // TODO add your handling code here:
-        if (current_line < 0)
-        {
-            System.out.println("Beginning of text");
-        }
-        else
-        {
-            ReadCurrentLine();
-            current_line--;
-        }
     }//GEN-LAST:event_jBtnPrevLineActionPerformed
 
     private void jBtnRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnRunActionPerformed
         // TODO add your handling code here:
-        for (String line: lines)
+        
+        for (int i = 0; i < this.program_table.getRowCount(); i++)
         {
             ReadCurrentLine();
-            current_line++;
         }
+
     }//GEN-LAST:event_jBtnRunActionPerformed
 
     String[] lines;
-    int lines_length;
     int current_line;
     /**
      * @param args the command line arguments
