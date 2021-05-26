@@ -285,12 +285,26 @@ public class Pipeline {
         
         int a;
         int b;
+        int imm;
         int ALUOutput_Decimal;
         String ALUOutput_String = "00000000";
+        String imm_hex_opcode = "00000000";
         
         switch (current_instruction)
         {
                 case "lw":
+                    a = Convert.HexToDecimal(id_ex_a_opcode);
+                    
+                    ir_row_index = pipeline_internal_register_map.get("ID/EX.IMM");
+                    imm_hex_opcode = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
+                    imm = Convert.HexToDecimal(imm_hex_opcode);
+                    
+                    ir_row_index = pipeline_internal_register_map.get("ID/EX.B");
+                    String ex_mem_b = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
+                    pipeline_internal_register_model.setValueAt(ex_mem_b, ir_row_index, 1);
+                    
+                    ALUOutput_Decimal = a + imm;
+                    ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal, 32);
                     break;
                 case "sw":
                     break;
@@ -298,47 +312,99 @@ public class Pipeline {
                     a = Convert.HexToDecimal(id_ex_a_opcode);
                     b = Convert.HexToDecimal(id_ex_b_opcode);
                     ALUOutput_Decimal = a + b;
-                    ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal);
+                    ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal, 32);
                     break;
                 case "and":
                     a = Convert.HexToDecimal(id_ex_a_opcode);
                     b = Convert.HexToDecimal(id_ex_b_opcode);
                     ALUOutput_Decimal = a & b;
-                    ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal);
+                    ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal, 32);
                     break;
                 case "or":
                     a = Convert.HexToDecimal(id_ex_a_opcode);
                     b = Convert.HexToDecimal(id_ex_b_opcode);
                     ALUOutput_Decimal = a | b;
-                    ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal);
+                    ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal, 32);
                     break;
                 case "xor":
                     a = Convert.HexToDecimal(id_ex_a_opcode);
                     b = Convert.HexToDecimal(id_ex_b_opcode);
                     ALUOutput_Decimal = a ^ b;
-                    ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal);
+                    ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal, 32);
                     break;
                 case "slt":
                 case "sll":
                     a = Convert.HexToDecimal(id_ex_a_opcode);
                     b = Convert.HexToDecimal(id_ex_b_opcode);
                     ALUOutput_Decimal = a << b;
-                    ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal);
+                    ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal, 32);
                     break;
                 case "srl":
                     a = Convert.HexToDecimal(id_ex_a_opcode);
                     b = Convert.HexToDecimal(id_ex_b_opcode);
                     ALUOutput_Decimal = a >> b;
-                    ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal);
+                    ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal, 32);
                     break;
                 case "addi":
+                    a = Convert.HexToDecimal(id_ex_a_opcode);
+                    
+                    ir_row_index = pipeline_internal_register_map.get("ID/EX.IMM");
+                    imm_hex_opcode = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
+                    imm = Convert.HexToDecimal(imm_hex_opcode);
+                    
+                    ALUOutput_Decimal = a + imm;
+                    ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal, 32);
+                    break;
                 case "andi":
+                    a = Convert.HexToDecimal(id_ex_a_opcode);
+                    
+                    ir_row_index = pipeline_internal_register_map.get("ID/EX.IMM");
+                    imm_hex_opcode = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
+                    imm = Convert.HexToDecimal(imm_hex_opcode);
+                    
+                    ALUOutput_Decimal = a & imm;
+                    ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal, 32);
+                    break;
                 case "slti":
                 case "ori":
+                    a = Convert.HexToDecimal(id_ex_a_opcode);
+                    
+                    ir_row_index = pipeline_internal_register_map.get("ID/EX.IMM");
+                    imm_hex_opcode = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
+                    imm = Convert.HexToDecimal(imm_hex_opcode);
+                    
+                    ALUOutput_Decimal = a | imm;
+                    ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal, 32);
+                    break;
                 case "xori":
+                    a = Convert.HexToDecimal(id_ex_a_opcode);
+                    
+                    ir_row_index = pipeline_internal_register_map.get("ID/EX.IMM");
+                    imm_hex_opcode = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
+                    imm = Convert.HexToDecimal(imm_hex_opcode);
+                    
+                    ALUOutput_Decimal = a ^ imm;
+                    ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal, 32);
                     break;
                 case "slli":
+                    a = Convert.HexToDecimal(id_ex_a_opcode);
+                    
+                    ir_row_index = pipeline_internal_register_map.get("ID/EX.IMM");
+                    imm_hex_opcode = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
+                    imm = Convert.HexToDecimal(imm_hex_opcode);
+                    
+                    ALUOutput_Decimal = a << imm;
+                    ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal, 32);
+                    break;
                 case "srli":
+                    a = Convert.HexToDecimal(id_ex_a_opcode);
+                    
+                    ir_row_index = pipeline_internal_register_map.get("ID/EX.IMM");
+                    imm_hex_opcode = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
+                    imm = Convert.HexToDecimal(imm_hex_opcode);
+                    
+                    ALUOutput_Decimal = a >> imm;
+                    ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal, 32);
                     break;
                 case "beq":
                 case "bne":
