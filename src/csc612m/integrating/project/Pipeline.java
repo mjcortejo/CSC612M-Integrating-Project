@@ -41,7 +41,7 @@ public class Pipeline {
     
     List<String> instruction_list;
     
-    int cycles = 0;
+    int cycles = 1;
     
     int previous_pc = 0;
     
@@ -111,9 +111,13 @@ public class Pipeline {
         
         pipeline_map.put(current_pc_hex, current_state);
         
+        cycles++;
+        pipeline_map_model.addColumn("Cycle "+ (cycles - 1));
+        
         for (Map.Entry<String, String> instruction: pipeline_map.entrySet())
         {
             //get state of each pc counter
+
             int instruction_pc = FindTableRowByCounterPC(instruction.getKey());
             String instruction_state = GetJTableValue(tableProgram, instruction_pc, 3);
             
@@ -170,10 +174,10 @@ public class Pipeline {
 //        String current_pc_hex = GetJTableValue(tableRegister, 32, 2);
 
         String instruction_address = GetJTableValue(tableProgram, instruction_pc, 0);  
-        String current_instruction = ExtractInstruction(instruction_line);
         
         int ir_row_index = pipeline_internal_register_map.get("PC");
-        String current_pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
+//        String current_pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
+        String current_pc_hex = instruction_address;
         
         int current_pc_program_row = FindTableRowByCounterPC(current_pc_hex);
         
@@ -198,6 +202,9 @@ public class Pipeline {
         int current_counter_pc = FindTableRowByCounterPC(current_pc_hex);
         program_model.setValueAt("IF", current_counter_pc, 3);
         
+        
+        pipeline_map_model.setValueAt("IF", current_counter_pc, cycles);
+        
 //        ir_row_index = pipeline_internal_register_map.get("ID/EX.IR");
 //        String id_ex_ir_opcode = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
     }
@@ -207,6 +214,8 @@ public class Pipeline {
         //A <- Regs[IR 19...15]
         //B <- Regs[IR 24...20]
         //Imm <- {Sign_extend[IR 31..20] (immediate ALU) | sign_extend[IR 31..25, 11..7] (branch/store
+        String instruction_address = GetJTableValue(tableProgram, instruction_pc, 0);
+        
         int ir_row_index = pipeline_internal_register_map.get("IF/ID.IR");
         String p_ir_model_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
         int[] id_ir_full_binary = Convert.HexaToBinary(p_ir_model_hex, 32);
@@ -240,11 +249,12 @@ public class Pipeline {
         String id_ex_imm_hex = Convert.BinaryToHex(id_ex_imm_binary);
         pipeline_internal_register_model.setValueAt(id_ex_imm_hex, ir_row_index, 1);
         
-        int current_counter_pc = FindTableRowByCounterPC(next_pc);
+        int current_counter_pc = FindTableRowByCounterPC(instruction_address);
         
         if(current_counter_pc != -1)
         {
             program_model.setValueAt("ID", current_counter_pc, 3);
+            pipeline_map_model.setValueAt("ID", current_counter_pc, cycles);
         }
     }
     
@@ -252,7 +262,9 @@ public class Pipeline {
     public void Execute(int instruction_pc){
         //we can check invalid registers here
         //ALU Operations
-        
+
+        String instruction_address = GetJTableValue(tableProgram, instruction_pc, 0);
+
         String instruction_line = GetJTableValue(tableProgram, instruction_pc, 2);  
         String current_instruction = ExtractInstruction(instruction_line);
         
@@ -274,7 +286,7 @@ public class Pipeline {
         int a;
         int b;
         int ALUOutput_Decimal;
-        String ALUOutput_String;
+        String ALUOutput_String = "00000000";
         
         switch (current_instruction)
         {
@@ -293,19 +305,31 @@ public class Pipeline {
                     b = Convert.HexToDecimal(id_ex_b_opcode);
                     ALUOutput_Decimal = a & b;
                     ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal);
+                    break;
                 case "or":
                     a = Convert.HexToDecimal(id_ex_a_opcode);
                     b = Convert.HexToDecimal(id_ex_b_opcode);
                     ALUOutput_Decimal = a | b;
                     ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal);
+                    break;
                 case "xor":
                     a = Convert.HexToDecimal(id_ex_a_opcode);
                     b = Convert.HexToDecimal(id_ex_b_opcode);
                     ALUOutput_Decimal = a ^ b;
                     ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal);
+                    break;
                 case "slt":
                 case "sll":
+                    a = Convert.HexToDecimal(id_ex_a_opcode);
+                    b = Convert.HexToDecimal(id_ex_b_opcode);
+                    ALUOutput_Decimal = a << b;
+                    ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal);
+                    break;
                 case "srl":
+                    a = Convert.HexToDecimal(id_ex_a_opcode);
+                    b = Convert.HexToDecimal(id_ex_b_opcode);
+                    ALUOutput_Decimal = a >> b;
+                    ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal);
                     break;
                 case "addi":
                 case "andi":
@@ -325,23 +349,29 @@ public class Pipeline {
                     break;
         }
         
-        int current_counter_pc = FindTableRowByCounterPC(current_pc_hex);
+        ir_row_index = pipeline_internal_register_map.get("EX/MEM.ALUOutput");
+        pipeline_internal_register_model.setValueAt(ALUOutput_String, ir_row_index, 1);
+        
+        int current_counter_pc = FindTableRowByCounterPC(instruction_address);
         
         if(current_counter_pc != -1)
         {
             program_model.setValueAt("EX", current_counter_pc, 3);
+            pipeline_map_model.setValueAt("EX", current_counter_pc, cycles);
         }
     }
     
     public void Memory(int instruction_pc)
     {
+        String instruction_address = GetJTableValue(tableProgram, instruction_pc, 0);
+
         String instruction_line = GetJTableValue(tableProgram, instruction_pc, 2);  
         String current_instruction = ExtractInstruction(instruction_line);
         
         int ir_row_index = pipeline_internal_register_map.get("PC");
         String current_pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
         
-        int current_counter_pc = FindTableRowByCounterPC(current_pc_hex);
+        int current_counter_pc = FindTableRowByCounterPC(instruction_address);
         
         if(current_counter_pc != -1)
         {
@@ -352,14 +382,15 @@ public class Pipeline {
     //WB
     public void WriteBack(int instruction_pc){
         //Regs[11..7] <- ALU Output
-        
+        String instruction_address = GetJTableValue(tableProgram, instruction_pc, 0);
+
         String instruction_line = GetJTableValue(tableProgram, instruction_pc, 2);  
         String current_instruction = ExtractInstruction(instruction_line);
         
         int ir_row_index = pipeline_internal_register_map.get("PC");
         String current_pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
         
-        int current_counter_pc = FindTableRowByCounterPC(current_pc_hex);
+        int current_counter_pc = FindTableRowByCounterPC(instruction_address);
         
         if(current_counter_pc != -1)
         {
