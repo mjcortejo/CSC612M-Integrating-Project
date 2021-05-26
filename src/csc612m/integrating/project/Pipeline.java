@@ -311,6 +311,7 @@ public class Pipeline {
                 case "add":
                     a = Convert.HexToDecimal(id_ex_a_opcode);
                     b = Convert.HexToDecimal(id_ex_b_opcode);
+                            
                     ALUOutput_Decimal = a + b;
                     ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal, 32);
                     break;
@@ -407,9 +408,30 @@ public class Pipeline {
                     ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal, 32);
                     break;
                 case "beq":
+                    a = Convert.HexToDecimal(id_ex_a_opcode);
+                    
+                    ir_row_index = pipeline_internal_register_map.get("ID/EX.IMM");
+                    imm_hex_opcode = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
+                    imm = Convert.HexToDecimal(imm_hex_opcode);
+                    
+                    b = Convert.HexToDecimal(id_ex_b_opcode);
+                    ALUOutput_Decimal = (a == b) ? 1 : 0;
+                    ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal, 32);
                 case "bne":
+                    a = Convert.HexToDecimal(id_ex_a_opcode);
+                    b = Convert.HexToDecimal(id_ex_b_opcode);
+                    ALUOutput_Decimal = (a != b) ? 1 : 0;
+                    ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal, 32);
                 case "blt":
+                    a = Convert.HexToDecimal(id_ex_a_opcode);
+                    b = Convert.HexToDecimal(id_ex_b_opcode);
+                    ALUOutput_Decimal = (a <= b) ? 1 : 0;
+                    ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal, 32);
                 case "bge":
+                    a = Convert.HexToDecimal(id_ex_a_opcode);
+                    b = Convert.HexToDecimal(id_ex_b_opcode);
+                    ALUOutput_Decimal = (a >= b) ? 1 : 0;
+                    ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal, 32);
                     break;
                 default: //check if its a label
                     break;
