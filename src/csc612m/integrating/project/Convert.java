@@ -155,6 +155,18 @@ public class Convert {
         return IntDecimalToBinary(decimal, 0);
     }
     
+    public static String IntDecimalToHex(int decimal)
+    {
+        int[] binary = IntDecimalToBinary(decimal);
+        return BinaryToHex(binary);
+    }
+    
+    public static String IntDecimalToHex(int decimal, int num_bits)
+    {
+        int[] binary = IntDecimalToBinary(decimal, num_bits);
+        return BinaryToHex(binary);
+    }
+    
     /***
      * Converts int list Binary to string Hexadecimal
      * @param binary
