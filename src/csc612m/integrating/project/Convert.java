@@ -167,6 +167,22 @@ public class Convert {
         return BinaryToHex(binary);
     }
     
+    public static int BinaryToDecimal(int[] binary)
+    {
+        int dec_value = 0;
+        int current_bit = 1;
+        for (int i = binary.length - 1; i >= 0; i--)
+        {
+            if (binary[i] == 1)
+            {
+                dec_value += current_bit;
+            }
+            current_bit = current_bit + current_bit;
+        }
+        
+        return dec_value;
+    }
+    
     /***
      * Converts int list Binary to string Hexadecimal
      * @param binary
