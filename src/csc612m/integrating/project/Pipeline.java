@@ -176,7 +176,7 @@ public class Pipeline {
 
         String instruction_address = GetJTableValue(tableProgram, instruction_pc, 0);  
         
-        int ir_row_index = pipeline_internal_register_map.get("PC");
+        int ir_row_index = pipeline_internal_register_map.get("PC"); //this is actually not used
 //        String current_pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
         String current_pc_hex = instruction_address;
         
@@ -231,6 +231,37 @@ public class Pipeline {
 //        int current_counter = FindTableRowByCounterPC(current_npc_hex);
 //        
 //        String current_state = GetJTableValue(tableProgram, current_counter, 3);
+
+        switch (current_instruction)
+        {
+            case "beq":
+            case "bne":
+            case "blt":
+            case "bge":
+                switch(current_instruction)
+                {
+                    case "beq":
+                    case "bne":
+                    case "blt":
+                    case "bge":
+                        break;
+                }
+                
+                System.out.println("Branch Instruction Detected");
+                ir_row_index = pipeline_internal_register_map.get("PC");
+                String pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
+                int pc_dec = Convert.HexToDecimal(pc_hex);
+                
+                ir_row_index = pipeline_internal_register_map.get("ID/EX.IMM");
+                int[] id_ex_imm_binary = GetBinaryFromOpcode(id_ir_full_binary, 31, 20);
+                int id_ex_imm_dec = Convert.BinaryToDecimal(id_ex_imm_binary);
+                
+                int next_pc = pc_dec + id_ex_imm_dec;
+                //assign to pc and npc
+                break;
+            default:
+                break;
+        }
         
         ir_row_index = pipeline_internal_register_map.get("IF/ID.NPC");
         String next_pc = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
