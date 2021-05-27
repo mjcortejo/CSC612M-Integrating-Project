@@ -547,8 +547,17 @@ public class Opcode {
             offset = "0"; //force binary to zero
         }
         
-        offset = offset.replace("0x", "");
-        int[] offset_binary = Convert.HexaToBinary(offset, 12); //12 bits for the imm
+        int[] offset_binary;
+                
+        if (offset.contains("0x")) //if offset is hex
+        {
+            offset = offset.replace("0x", "");
+            offset_binary = Convert.HexaToBinary(offset, 12); //12 bits for the imm
+        }
+        else //if offset is decimal, this will also error
+        {
+            offset_binary = Convert.DecimalToBinary(offset, 12); 
+        }
         return offset_binary;
     }
     
