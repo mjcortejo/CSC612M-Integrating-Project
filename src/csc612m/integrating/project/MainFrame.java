@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.table.DefaultTableModel;
@@ -30,12 +32,14 @@ public class MainFrame extends javax.swing.JFrame {
     DefaultTableModel pipeline_map_table;
     HashMap<String, Integer> register_alias_map;
     HashMap<String, int[]> data_segment_map;
+    HashMap<Integer, int[]> address_location_map;
     
     public MainFrame() {
         initComponents();
 
         pipeline = new Pipeline(jTableRegister, jTableProgram, jTablePipelineMap, jTablePipelineRegister);
         data_segment_map = new HashMap<String, int[]>();
+        address_location_map = new HashMap<Integer, int[]>();
         
         register_alias_map = new HashMap<String, Integer>() {{ //this is used when the instruction is invoking the alias name which will point to a row number (the integer value)
             put("t0", 5);
@@ -81,15 +85,29 @@ public class MainFrame extends javax.swing.JFrame {
             int[] decimal_to_binary = Convert.IntDecimalToBinary(i, 12); //12 bits == 2048 (according to specs)
             String binary_to_hex = Convert.BinaryToHex(decimal_to_binary);
             cell.add(binary_to_hex); //this is just the label
+            
+            int address_col_location = 0;
+            
+            if (i % 32 == 0) address_col_location = i / 32;
+            else address_col_location = (i + 1) / 32;
+            
             for (int j = 4; j < 32; j+=4) //add half bytes
             {
                 binary_to_hex = Convert.BinaryToHex(Convert.IntDecimalToBinary(0, 12));
                 cell.add(binary_to_hex);
                 String memory_hex = Convert.BinaryToHex(Convert.IntDecimalToBinary(i+j, 12));
+                
+                int address_row_location = 0;
+                
+                if (j % 4 == 0) address_row_location = j / 4;
+                else address_row_location = (j+1) / 4;
+                
+                address_location_map.put(i+j, new int[]{ address_row_location, address_col_location});
 //                data_segment_map.put(memory_hex, binary_to_hex);
             }
             this.memory_table.addRow(cell);
         }
+        pipeline.address_location_map = address_location_map;
     }
 
     /**
@@ -581,9 +599,13 @@ public class MainFrame extends javax.swing.JFrame {
     
     public void ReadCurrentLine()
     {
-        //parse or read line here
+        try {
+            //parse or read line here
 //        opcode.GenerateOpcode(lines[current_line], jTableRegister);
-        pipeline.Cycle();
+            pipeline.Cycle();
+        } catch (Exception ex) {
+            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
