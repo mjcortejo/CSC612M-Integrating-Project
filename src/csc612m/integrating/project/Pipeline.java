@@ -23,6 +23,8 @@ import javax.swing.table.DefaultTableModel;
 //Hex computation https://www.w3resource.com/java-exercises/basic/java-basic-exercise-29.php
 public class Pipeline {
     
+    public HashMap<Integer, int[]> address_location_map;
+    
     JTable tableRegister;
     JTable tableProgram;
     JTable tablePipelineMap;
@@ -30,7 +32,6 @@ public class Pipeline {
     
     HashMap<String, Integer> register_alias_map;
     Map<String, String> pipeline_map;
-    
     
     HashMap<String, Integer> pipeline_internal_register_map;
     
@@ -215,6 +216,9 @@ public class Pipeline {
         //B <- Regs[IR 24...20]
         //Imm <- {Sign_extend[IR 31..20] (immediate ALU) | sign_extend[IR 31..25, 11..7] (branch/store
         String instruction_address = GetJTableValue(tableProgram, instruction_pc, 0);
+        
+        String instruction_line = GetJTableValue(tableProgram, instruction_pc, 2);  //this is to check if its a branch instruction
+        String current_instruction = ExtractInstruction(instruction_line);
         
         int ir_row_index = pipeline_internal_register_map.get("IF/ID.IR");
         String p_ir_model_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
@@ -413,7 +417,6 @@ public class Pipeline {
                             break;
                     }
                     ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal, 32);
-                default: //check if its a label
                     break;
         }
         
@@ -423,7 +426,7 @@ public class Pipeline {
         int current_counter_pc = FindTableRowByCounterPC(instruction_address);
         
         if(current_counter_pc != -1)
-        {
+        { 
             program_model.setValueAt("EX", current_counter_pc, 3);
             pipeline_map_model.setValueAt("EX", current_counter_pc, cycles);
         }
@@ -438,6 +441,48 @@ public class Pipeline {
         
         int ir_row_index = pipeline_internal_register_map.get("PC");
         String current_pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
+        
+        
+        String id_ex_mem_ir;
+        switch (current_instruction)
+        {
+            case "lw":
+                //MEM/WB.IR <- EX/MEM.IR
+                ir_row_index = pipeline_internal_register_map.get("EX/MEM.IR");
+                id_ex_mem_ir = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
+                ir_row_index = pipeline_internal_register_map.get("MEM/WB.IR");
+                pipeline_internal_register_model.setValueAt(current_pc_hex, ir_row_index, 1);
+                break;
+            case "sw":
+            case "add":
+            case "and":
+            case "or":
+            case "xor":
+            case "sll":
+            case "slt":
+            case "srl":
+            case "addi":
+            case "andi":
+            case "slti":
+            case "ori":
+            case "xori":
+            case "slli":
+            case "srli":
+            case "beq":
+            case "bne":
+            case "blt":
+            case "bge":
+                ir_row_index = pipeline_internal_register_map.get("EX/MEM.IR");
+                id_ex_mem_ir = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
+                ir_row_index = pipeline_internal_register_map.get("MEM/WB.IR");
+                pipeline_internal_register_model.setValueAt(current_pc_hex, ir_row_index, 1);
+                
+                ir_row_index = pipeline_internal_register_map.get("EX/MEM.ALUOutput");
+                id_ex_mem_ir = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
+                ir_row_index = pipeline_internal_register_map.get("MEM/WB.ALUOutput");
+                pipeline_internal_register_model.setValueAt(current_pc_hex, ir_row_index, 1);
+                break;
+        }
         
         int current_counter_pc = FindTableRowByCounterPC(instruction_address);
         
@@ -498,27 +543,5 @@ public class Pipeline {
             new_binary[new_binary.length-j] = opcode_to_find[31-i];
         }
         return new_binary;
-    }
-    
-    public void load_word(String rd, String rs1)
-    {
-        //TODO
-        //we should check invalid registers here as well
-        
-    }
-    
-    public void store_word(String rd, String rs1)
-    {
-        //TODO
-    }
-    
-    public void add_register(String rd, String rs1, String rs2)
-    {
-        //TODO
-    }
-    
-    public void add_immediate(String rd, String rs1, String imm)
-    {
-        //TODO
     }
 }
