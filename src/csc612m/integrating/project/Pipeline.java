@@ -244,6 +244,11 @@ public class Pipeline {
         int id_ex_b_dec = Convert.HexToDecimal(id_ex_b_hex);
         pipeline_internal_register_model.setValueAt(id_ex_b_hex, ir_row_index, 1);
         
+        ir_row_index = pipeline_internal_register_map.get("ID/EX.IMM");
+        int[] id_ex_imm_binary = GetBinaryFromOpcode(id_ir_full_binary, 31, 25);
+        String id_ex_imm_hex = Convert.BinaryToHex(id_ex_imm_binary);
+        pipeline_internal_register_model.setValueAt(id_ex_imm_hex, ir_row_index, 1);
+        
 //        ir_row_index = pipeline_internal_register_map.get("PC");
 //        String current_npc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
 //        int current_counter = FindTableRowByCounterPC(current_npc_hex);
@@ -282,17 +287,15 @@ public class Pipeline {
 //                    String pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
                     int pc_dec = Convert.HexToDecimal(instruction_address);
                     
-                    ir_row_index = pipeline_internal_register_map.get("ID/EX.IMM");
-                    int[] id_ex_rd_binary = GetBinaryFromOpcode(id_ir_full_binary, 11, 7); //this gets the rd section of the result
+                    int[] id_ex_rd_binary_compute = GetBinaryFromOpcode(id_ir_full_binary, 11, 7); //this gets the rd section of the result
+                    int[] id_ex_imm_binary_compute = GetBinaryFromOpcode(id_ir_full_binary, 31, 25); //this gets the rd section of the result
 
-                    int[] id_ex_imm_binary = GetBinaryFromOpcode(id_ir_full_binary, 31, 25); //this gets the rd section of the result
+                    int[] rd_bin_restruct = new int[id_ex_rd_binary_compute.length];
 
-                    int[] rd_bin_restruct = new int[id_ex_rd_binary.length];
-
-                    rd_bin_restruct[4] = id_ex_rd_binary[3];
-                    rd_bin_restruct[3] = id_ex_rd_binary[2];
-                    rd_bin_restruct[2] = id_ex_rd_binary[1];
-                    rd_bin_restruct[1] = id_ex_rd_binary[0];
+                    rd_bin_restruct[4] = id_ex_rd_binary_compute[3];
+                    rd_bin_restruct[3] = id_ex_rd_binary_compute[2];
+                    rd_bin_restruct[2] = id_ex_rd_binary_compute[1];
+                    rd_bin_restruct[1] = id_ex_rd_binary_compute[0];
                     rd_bin_restruct[0] = id_ex_imm_binary[6];
 
                     int[] imm_bin_restruct = new int[id_ex_imm_binary.length];
@@ -302,7 +305,7 @@ public class Pipeline {
                     imm_bin_restruct[4] = id_ex_imm_binary[3];
                     imm_bin_restruct[3] = id_ex_imm_binary[2];
                     imm_bin_restruct[2] = id_ex_imm_binary[1];
-                    imm_bin_restruct[1] = id_ex_rd_binary[4];
+                    imm_bin_restruct[1] = id_ex_rd_binary_compute[4];
                     imm_bin_restruct[0] = id_ex_imm_binary[0];
                     
                     int[] merged_bin = new int[rd_bin_restruct.length + imm_bin_restruct.length];
