@@ -281,12 +281,45 @@ public class Pipeline {
 //                    ir_row_index = pipeline_internal_register_map.get("PC");
 //                    String pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
                     int pc_dec = Convert.HexToDecimal(instruction_address);
-
+                    
                     ir_row_index = pipeline_internal_register_map.get("ID/EX.IMM");
-                    int[] id_ex_imm_binary = GetBinaryFromOpcode(id_ir_full_binary, 31, 20);
-                    int id_ex_imm_dec = Convert.BinaryToDecimal(id_ex_imm_binary);
+                    int[] id_ex_rd_binary = GetBinaryFromOpcode(id_ir_full_binary, 11, 7); //this gets the rd section of the result
 
-                    int next_pc_dec = pc_dec + (id_ex_imm_dec << 1);
+                    int[] id_ex_imm_binary = GetBinaryFromOpcode(id_ir_full_binary, 31, 25); //this gets the rd section of the result
+
+                    int[] rd_bin_restruct = new int[id_ex_rd_binary.length];
+
+                    rd_bin_restruct[4] = id_ex_rd_binary[3];
+                    rd_bin_restruct[3] = id_ex_rd_binary[2];
+                    rd_bin_restruct[2] = id_ex_rd_binary[1];
+                    rd_bin_restruct[1] = id_ex_rd_binary[0];
+                    rd_bin_restruct[0] = id_ex_imm_binary[6];
+
+                    int[] imm_bin_restruct = new int[id_ex_imm_binary.length];
+
+                    imm_bin_restruct[6] = id_ex_imm_binary[5];
+                    imm_bin_restruct[5] = id_ex_imm_binary[4];
+                    imm_bin_restruct[4] = id_ex_imm_binary[3];
+                    imm_bin_restruct[3] = id_ex_imm_binary[2];
+                    imm_bin_restruct[2] = id_ex_imm_binary[1];
+                    imm_bin_restruct[1] = id_ex_rd_binary[4];
+                    imm_bin_restruct[0] = id_ex_imm_binary[0];
+                    
+                    int[] merged_bin = new int[rd_bin_restruct.length + imm_bin_restruct.length];
+                    
+                    for (int i = 0; i < rd_bin_restruct.length; i++)
+                    {
+                        merged_bin[0] = rd_bin_restruct[0];
+                    }
+                    
+                    for (int i = rd_bin_restruct.length, j = 0; j < imm_bin_restruct.length; i++ ,j++)
+                    {
+                        merged_bin[i] = imm_bin_restruct[j];
+                    }
+                    
+                    int id_ex_imm_dec = Convert.BinaryToDecimal(merged_bin);
+
+                    int next_pc_dec = pc_dec + id_ex_imm_dec;
                     String next_pc_hex = Convert.IntDecimalToHex(next_pc_dec, 32);
                     
                     ir_row_index = pipeline_internal_register_map.get("PC");
@@ -299,32 +332,6 @@ public class Pipeline {
             default:
                 break;
         }
-        
-        ir_row_index = pipeline_internal_register_map.get("ID/EX.IMM");
-        int[] id_ex_rd_binary = GetBinaryFromOpcode(id_ir_full_binary, 11, 7); //this gets the rd section of the result
-        
-        int[] id_ex_imm_binary = GetBinaryFromOpcode(id_ir_full_binary, 31, 25); //this gets the rd section of the result
-        
-        int[] rd_bin_restruct = new int[id_ex_rd_binary.length];
-        
-        rd_bin_restruct[4] = id_ex_rd_binary[3];
-        rd_bin_restruct[3] = id_ex_rd_binary[2];
-        rd_bin_restruct[2] = id_ex_rd_binary[1];
-        rd_bin_restruct[1] = id_ex_rd_binary[0];
-        rd_bin_restruct[0] = id_ex_imm_binary[6];
-        
-        int[] imm_bin_restruct = new int[id_ex_imm_binary.length];
-        
-        imm_bin_restruct[6] = id_ex_imm_binary[5];
-        imm_bin_restruct[5] = id_ex_imm_binary[4];
-        imm_bin_restruct[4] = id_ex_imm_binary[3];
-        imm_bin_restruct[3] = id_ex_imm_binary[2];
-        imm_bin_restruct[2] = id_ex_imm_binary[1];
-        imm_bin_restruct[1] = id_ex_rd_binary[4];
-        imm_bin_restruct[0] = id_ex_imm_binary[0];
-        
-        String id_ex_imm_hex = Convert.BinaryToHex(id_ex_imm_binary);
-        pipeline_internal_register_model.setValueAt(id_ex_imm_hex, ir_row_index, 1);
 
         
         int current_counter_pc = FindTableRowByCounterPC(instruction_address);
