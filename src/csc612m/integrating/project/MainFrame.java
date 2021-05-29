@@ -26,6 +26,7 @@ public class MainFrame extends javax.swing.JFrame {
      * Creates new form MainFrame
      */
     Pipeline pipeline;
+    InstructionExtractor instruction_extractor;
     Opcode opcode;
     DefaultTableModel memory_table;
     DefaultTableModel program_table;
@@ -34,12 +35,15 @@ public class MainFrame extends javax.swing.JFrame {
     HashMap<String, int[]> data_segment_map;
     HashMap<Integer, int[]> address_location_map;
     
+    HashMap<String, String[]> instruction_parse_map;
+    
     public MainFrame() {
         initComponents();
 
         pipeline = new Pipeline(jTableRegister, jTableProgram, jTablePipelineMap, jTablePipelineRegister);
         data_segment_map = new HashMap<String, int[]>();
         address_location_map = new HashMap<Integer, int[]>();
+        instruction_parse_map = new HashMap<String, String[]>();
         
         register_alias_map = new HashMap<String, Integer>() {{ //this is used when the instruction is invoking the alias name which will point to a row number (the integer value)
             put("t0", 5);
@@ -505,6 +509,7 @@ public class MainFrame extends javax.swing.JFrame {
     public void PopulateProgramTextSegmentAddress(int current_parse_line)
     {
         opcode = new Opcode(jTableRegister, jTableProgram, jTableMemory, data_segment_map);
+        instruction_extractor = new InstructionExtractor(jTableProgram, data_segment_map);
         lines = jEditorPane1.getText().split("\n");
         this.program_table = (DefaultTableModel)jTableProgram.getModel();
         this.pipeline_map_table = (DefaultTableModel)jTablePipelineMap.getModel();
@@ -523,10 +528,11 @@ public class MainFrame extends javax.swing.JFrame {
             
             this.program_table.addRow(cell);
             this.pipeline_map_table.addRow(pipeline_cell);
-            
         }
-        
+                
         DefaultTableModel program_model = (DefaultTableModel)jTableProgram.getModel();
+        
+        instruction_parse_map = instruction_extractor.ExtractParams();
         
         //assign opcodes after loading the instructions in memory
         for (int i = current_parse_line + 1, j = 0; i < lines.length; i++, j++)
@@ -534,6 +540,8 @@ public class MainFrame extends javax.swing.JFrame {
             String full_opcode = opcode.GenerateOpcode(lines[i], j);
             program_model.setValueAt(full_opcode, j, 1);
         }
+        
+        pipeline.instruction_parse_map = instruction_parse_map;
     }
     private void jBtnNextLineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnNextLineActionPerformed
         // TODO add your handling code here:

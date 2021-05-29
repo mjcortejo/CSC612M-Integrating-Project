@@ -23,6 +23,7 @@ public class Opcode {
     HashMap<String, int[]> funct3_opcode_map;
     HashMap<String, int[]> funct7_opcode_map;
     HashMap<String, Integer> register_alias_map;
+    HashMap<String, String[]> instruction_parse_map;
     int[] binary_opcode;
     
     JTable jTableRegister;
