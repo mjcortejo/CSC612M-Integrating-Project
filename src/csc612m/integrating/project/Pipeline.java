@@ -51,6 +51,8 @@ public class Pipeline {
     
     int previous_pc = 0;
     
+    boolean branch_executed = false;
+    
     public Pipeline(JTable jTableRegister, JTable jTableProgram, JTable jTablePipelineMap, JTable jTablePipelineRegister)
     {
         instruction_list = new ArrayList<String>() {{
@@ -211,6 +213,12 @@ public class Pipeline {
         
         pipeline_map_model.setValueAt("IF", current_counter_pc, cycles);
         
+        if (branch_executed)
+        {
+            pipeline_map.remove(current_pc_hex);
+            branch_executed = false;
+        }
+        
 //        ir_row_index = pipeline_internal_register_map.get("ID/EX.IR");
 //        String id_ex_ir_opcode = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
     }
@@ -260,8 +268,7 @@ public class Pipeline {
 //        
 //        String current_state = GetJTableValue(tableProgram, current_counter, 3);
 
-        boolean branch_executed = false;
-
+//        branch_executed = false;
         switch (current_instruction)
         {
             case "beq":
@@ -297,8 +304,10 @@ public class Pipeline {
                     System.out.println("Branch Instruction Detected");
                     
                     ir_row_index = pipeline_internal_register_map.get("PC");
-                    String current_pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
-                    pipeline_map.remove(current_pc_hex);//stops the next pipeline from running
+//                    String current_pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
+//                    pipeline_map.remove(current_pc_hex);//stops the next pipeline from running
+//                    int current_counter_pc = FindTableRowByCounterPC(instruction_address);
+//                    pipeline_map_model.setValueAt("DEL", current_counter_pc, cycles);
                     
                     pipeline_internal_register_model.setValueAt(target_instruction[2], ir_row_index, 1);
 
