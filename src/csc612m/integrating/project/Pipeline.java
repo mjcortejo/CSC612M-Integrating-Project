@@ -12,7 +12,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JTable;
+import javax.swing.JTextPane;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -24,6 +27,7 @@ import javax.swing.table.DefaultTableModel;
 public class Pipeline {
     
     public HashMap<Integer, int[]> address_location_map;
+    public JTextPane jTextPane;
     
     JTable tableRegister;
     JTable tableProgram;
@@ -34,6 +38,7 @@ public class Pipeline {
     Map<String, String> pipeline_map;
     
     HashMap<String, Integer> pipeline_internal_register_map;
+    HashMap<String, String[]> instruction_parse_map;
     
     DefaultTableModel register_model;
     DefaultTableModel program_model;
@@ -256,7 +261,6 @@ public class Pipeline {
 //        String current_state = GetJTableValue(tableProgram, current_counter, 3);
 
         boolean branch_executed = false;
-        
 
         switch (current_instruction)
         {
@@ -264,72 +268,42 @@ public class Pipeline {
             case "bne":
             case "blt":
             case "bge":
+                String[] target_instruction = instruction_parse_map.get(instruction_address);
+        
+                String rs1_value_hex = GetRegisterHexValueFromRegisterName(target_instruction[0]);
+                int rs1_value_dec = Convert.HexToDecimal(rs1_value_hex);
+
+                String rs2_value_hex = GetRegisterHexValueFromRegisterName(target_instruction[1]);
+                int rs2_value_dec = Convert.HexToDecimal(rs2_value_hex);
+                
                 switch(current_instruction)
                 {
                     case "beq":
-                        if (id_ex_a_dec == id_ex_b_dec) branch_executed = true;
+                        if (rs1_value_dec == rs2_value_dec) branch_executed = true;
                         break;
                     case "bne":
-                        if (id_ex_a_dec != id_ex_b_dec) branch_executed = true;
+                        if (rs1_value_dec != rs2_value_dec) branch_executed = true;
                         break;
                     case "blt":
-                        if (id_ex_a_dec < id_ex_b_dec) branch_executed = true;
+                        if (rs1_value_dec < rs2_value_dec) branch_executed = true;
                         break;
                     case "bge":
-                        if (id_ex_a_dec > id_ex_b_dec) branch_executed = true;
+                        if (rs1_value_dec > rs2_value_dec) branch_executed = true;
                         break;
                 }
                 
                 if (branch_executed)
                 {
                     System.out.println("Branch Instruction Detected");
-//                    ir_row_index = pipeline_internal_register_map.get("PC");
-//                    String pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
-                    int pc_dec = Convert.HexToDecimal(instruction_address);
-                    
-                    int[] id_ex_rd_binary_compute = GetBinaryFromOpcode(id_ir_full_binary, 11, 7); //this gets the rd section of the result
-                    int[] id_ex_imm_binary_compute = GetBinaryFromOpcode(id_ir_full_binary, 31, 25); //this gets the rd section of the result
-
-                    int[] rd_bin_restruct = new int[id_ex_rd_binary_compute.length];
-
-                    rd_bin_restruct[4] = id_ex_rd_binary_compute[3];
-                    rd_bin_restruct[3] = id_ex_rd_binary_compute[2];
-                    rd_bin_restruct[2] = id_ex_rd_binary_compute[1];
-                    rd_bin_restruct[1] = id_ex_rd_binary_compute[0];
-                    rd_bin_restruct[0] = id_ex_imm_binary[6];
-
-                    int[] imm_bin_restruct = new int[id_ex_imm_binary.length];
-
-                    imm_bin_restruct[6] = id_ex_imm_binary[5];
-                    imm_bin_restruct[5] = id_ex_imm_binary[4];
-                    imm_bin_restruct[4] = id_ex_imm_binary[3];
-                    imm_bin_restruct[3] = id_ex_imm_binary[2];
-                    imm_bin_restruct[2] = id_ex_imm_binary[1];
-                    imm_bin_restruct[1] = id_ex_rd_binary_compute[4];
-                    imm_bin_restruct[0] = id_ex_imm_binary[0];
-                    
-                    int[] merged_bin = new int[rd_bin_restruct.length + imm_bin_restruct.length];
-                    
-                    for (int i = 0; i < rd_bin_restruct.length; i++)
-                    {
-                        merged_bin[0] = rd_bin_restruct[0];
-                    }
-                    
-                    for (int i = rd_bin_restruct.length, j = 0; j < imm_bin_restruct.length; i++ ,j++)
-                    {
-                        merged_bin[i] = imm_bin_restruct[j];
-                    }
-                    
-                    int id_ex_imm_dec = Convert.BinaryToDecimal(merged_bin);
-
-                    int next_pc_dec = pc_dec + id_ex_imm_dec;
-                    String next_pc_hex = Convert.IntDecimalToHex(next_pc_dec, 32);
                     
                     ir_row_index = pipeline_internal_register_map.get("PC");
-                    pipeline_internal_register_model.setValueAt(next_pc_hex, ir_row_index, 1);
+                    String current_pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
+                    pipeline_map.remove(current_pc_hex);//stops the next pipeline from running
+                    
+                    pipeline_internal_register_model.setValueAt(target_instruction[2], ir_row_index, 1);
 
                     ir_row_index = pipeline_internal_register_map.get("IF/ID.NPC");
-                    pipeline_internal_register_model.setValueAt(next_pc_hex, ir_row_index, 1);
+                    pipeline_internal_register_model.setValueAt(target_instruction[2], ir_row_index, 1);
                 }
                 break;
             default:
@@ -595,6 +569,59 @@ public class Pipeline {
         }
         
         pipeline_map.remove(current_pc_hex);
+    }
+    
+    
+    public String GetRegisterHexValueFromRegisterName(String register)
+    {
+        String result = "";
+        try {
+            int table_row = GetRegisterTableRow(register);
+            result = GetRegisterHexValueFromTableRow(table_row);
+        } catch (Exception ex) {
+            Logger.getLogger(Pipeline.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return result;
+    }
+    
+    public int GetRegisterTableRow(String register) throws Exception{
+        int table_row = 0;
+        if (register.charAt(0) == 'x') //this will check if the name called starts with xN or its original register name (etc. t0, a1)
+        {
+            String rownum_string = Character.toString(register.charAt(1));
+            table_row = Integer.parseInt(rownum_string);
+        }
+        else
+        {
+            if (register_alias_map.get(register) == null)
+            { //error check
+//                System.out.println("Invalid Register Name "+register);
+//                throw new Exception("Invalid Register Name " +register);
+            }
+            else
+            {
+                table_row = register_alias_map.get(register);
+            }
+        }
+        
+        return table_row;
+    }
+    
+    /***
+     * Gets the Hex Value from jTableRegister using the table row index
+     * @param table_row
+     * @return 
+     */
+        
+    public String GetRegisterHexValueFromTableRow(int table_row)
+    {
+        Object pre_rd_value = tableRegister.getValueAt(table_row, 2);
+        String rd_value = (pre_rd_value == null) ? "" : pre_rd_value.toString();
+        
+        rd_value = rd_value.replace("0x", ""); //removes the radix
+        
+        return rd_value;
     }
     
     public int FindTableRowByCounterPC(String pc_hex)

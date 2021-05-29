@@ -5,6 +5,7 @@
  */
 package csc612m.integrating.project;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,7 +15,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.JTextPane;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 
 /**
  *
@@ -28,6 +34,7 @@ public class MainFrame extends javax.swing.JFrame {
     Pipeline pipeline;
     InstructionExtractor instruction_extractor;
     Opcode opcode;
+    OutputPane outputpane;
     DefaultTableModel memory_table;
     DefaultTableModel program_table;
     DefaultTableModel pipeline_map_table;
@@ -35,12 +42,19 @@ public class MainFrame extends javax.swing.JFrame {
     HashMap<String, int[]> data_segment_map;
     HashMap<Integer, int[]> address_location_map;
     
+    SimpleAttributeSet attributeSet;
+    
+    Document textpane;
+    
     HashMap<String, String[]> instruction_parse_map;
     
     public MainFrame() {
         initComponents();
 
         pipeline = new Pipeline(jTableRegister, jTableProgram, jTablePipelineMap, jTablePipelineRegister);
+        outputpane = new OutputPane(jTextOutput);
+        
+        
         data_segment_map = new HashMap<String, int[]>();
         address_location_map = new HashMap<Integer, int[]>();
         instruction_parse_map = new HashMap<String, String[]>();
@@ -75,6 +89,16 @@ public class MainFrame extends javax.swing.JFrame {
             put("t6", 31);
         }};
         PopulateDataSegmentAddress();
+        
+//        attributeSet = new SimpleAttributeSet();
+//        
+//        attributeSet = new SimpleAttributeSet();  
+//        StyleConstants.setItalic(attributeSet, true);  
+//        StyleConstants.setForeground(attributeSet, Color.BLACK);  
+//        StyleConstants.setBackground(attributeSet, Color.white);  
+//        
+//        textpane = jTextOutput.getDocument();
+        
     }
     
     /***
@@ -495,12 +519,18 @@ public class MainFrame extends javax.swing.JFrame {
         {
             PopulateProgramTextSegmentAddress(current_parse_line);
         }
+        outputpane.Print("Finish Compiling");
         
-        
-        
-        System.out.println("COMPILED");
     }//GEN-LAST:event_jBtnAssembleActionPerformed
 
+//     public void OutputText(String s)
+//     {
+//        try {
+//            textpane.insertString(textpane.getLength(), s+"\n", attributeSet);
+//        } catch (Exception ex) {
+//            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//     }
 
     /***
      * Populates the jTableProgram table from the source code
@@ -542,6 +572,8 @@ public class MainFrame extends javax.swing.JFrame {
         }
         
         pipeline.instruction_parse_map = instruction_parse_map;
+        
+        outputpane.Print("Finished Generating Opcodes");
     }
     private void jBtnNextLineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnNextLineActionPerformed
         // TODO add your handling code here:
