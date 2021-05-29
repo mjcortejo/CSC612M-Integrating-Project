@@ -121,12 +121,16 @@ public class Pipeline {
         
         int current_counter_pc = FindTableRowByCounterPC(current_pc_hex);
         
-        if (current_counter_pc < tableProgram.getRowCount())
+        if (current_counter_pc == -1)
+        {
+            System.out.println("Hello");
+        }
+        
+        if (current_counter_pc < tableProgram.getRowCount() && current_counter_pc != -1)
         {
             String current_state = GetJTableValue(tableProgram, current_counter_pc, 3);
             pipeline_map.put(current_pc_hex, current_state);
         }
-
         
         cycles++;
         pipeline_map_model.addColumn("Cycle "+ (cycles - 1));
@@ -134,11 +138,16 @@ public class Pipeline {
         for (Map.Entry<String, String> instruction: pipeline_map.entrySet())
         {
             //get state of each pc counter
-
+            System.out.println(instruction.getKey());
             int instruction_pc = FindTableRowByCounterPC(instruction.getKey());
+            
             String instruction_state = GetJTableValue(tableProgram, instruction_pc, 3);
             
-            if (instruction_state.equals("MEM"))
+            if (instruction_state.equals("WB"))
+            {
+                pipeline_map.remove(instruction.getKey());
+            }
+            else if (instruction_state.equals("MEM"))
             {
                 WriteBack(instruction_pc);
             }
@@ -192,7 +201,7 @@ public class Pipeline {
 
         String instruction_address = GetJTableValue(tableProgram, instruction_pc, 0);  
         
-        int ir_row_index = pipeline_internal_register_map.get("PC"); //this is actually not used
+        int ir_row_index = pipeline_internal_register_map.get("PC");
         String current_pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
 //        String current_pc_hex = instruction_address;
         
@@ -200,36 +209,40 @@ public class Pipeline {
         
         int current_pc_int = Convert.HexToDecimal(current_pc_hex); 
         
-        String if_id_ir_opcode = GetJTableValue(tableProgram, current_pc_program_row, 1);
-        ir_row_index = pipeline_internal_register_map.get("IF/ID.IR");
-        pipeline_internal_register_model.setValueAt(if_id_ir_opcode, ir_row_index, 1);
-        
-        int next_pc = current_pc_int + 4;
-        int[] next_pc_bin = Convert.IntDecimalToBinary(next_pc, 32); //hex value has 32 bits
-        String next_pc_hex = Convert.BinaryToHex(next_pc_bin);
-        
-        ir_row_index = pipeline_internal_register_map.get("PC");
-        pipeline_internal_register_model.setValueAt(next_pc_hex, ir_row_index, 1);
-        
-        ir_row_index = pipeline_internal_register_map.get("IF/ID.NPC");
-        pipeline_internal_register_model.setValueAt(next_pc_hex, ir_row_index, 1);
-        
-        register_model.setValueAt(next_pc_hex, 32, 2);
-        
-        int current_counter_pc = FindTableRowByCounterPC(current_pc_hex);
-        program_model.setValueAt("IF", current_counter_pc, 3);
-        
-        
-        pipeline_map_model.setValueAt("IF", current_counter_pc, cycles);
-        
-        if (branch_executed)
+        if (current_pc_program_row < tableProgram.getRowCount() && current_pc_program_row != -1)
         {
-            pipeline_map.remove(current_pc_hex);
-            branch_executed = false;
+            String if_id_ir_opcode = GetJTableValue(tableProgram, current_pc_program_row, 1);
+            ir_row_index = pipeline_internal_register_map.get("IF/ID.IR");
+            pipeline_internal_register_model.setValueAt(if_id_ir_opcode, ir_row_index, 1);
+
+            int next_pc = current_pc_int + 4;
+            int[] next_pc_bin = Convert.IntDecimalToBinary(next_pc, 32); //hex value has 32 bits
+            String next_pc_hex = Convert.BinaryToHex(next_pc_bin);
+
+            ir_row_index = pipeline_internal_register_map.get("PC");
+            pipeline_internal_register_model.setValueAt(next_pc_hex, ir_row_index, 1);
+
+            ir_row_index = pipeline_internal_register_map.get("IF/ID.NPC");
+            pipeline_internal_register_model.setValueAt(next_pc_hex, ir_row_index, 1);
+
+            register_model.setValueAt(next_pc_hex, 32, 2);
+
+            int current_counter_pc = FindTableRowByCounterPC(current_pc_hex);
+            program_model.setValueAt("IF", current_counter_pc, 3);
+
+
+            pipeline_map_model.setValueAt("IF", current_counter_pc, cycles);
+
+            if (branch_executed)
+            {
+                pipeline_map.remove(current_pc_hex);
+                branch_executed = false;
+            }
         }
-        
-//        ir_row_index = pipeline_internal_register_map.get("ID/EX.IR");
-//        String id_ex_ir_opcode = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
+        else
+        {
+            System.out.println("wot");
+        }
     }
     
     //ID

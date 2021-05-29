@@ -577,8 +577,13 @@ public class MainFrame extends javax.swing.JFrame {
         outputpane.Print("Finished Generating Opcodes");
     }
     private void jBtnNextLineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnNextLineActionPerformed
-        // TODO add your handling code here:
-        ReadCurrentLine();
+        try {
+            // TODO add your handling code here:
+            ReadCurrentLine();
+        } catch (Exception ex) {
+            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+            outputpane.Print(ex.getMessage());
+        }
     }//GEN-LAST:event_jBtnNextLineActionPerformed
 
     /**
@@ -591,10 +596,17 @@ public class MainFrame extends javax.swing.JFrame {
 
     private void jBtnRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnRunActionPerformed
         // TODO add your handling code here:
+        boolean is_ok = true;
         
-        for (int i = 0; i < this.program_table.getRowCount(); i++)
+        while (is_ok)
         {
-            ReadCurrentLine();
+            try {
+                ReadCurrentLine();
+            } catch (Exception ex) {
+                Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+                outputpane.Print(ex.getMessage());
+                break;
+            }
         }
 
     }//GEN-LAST:event_jBtnRunActionPerformed
@@ -638,16 +650,11 @@ public class MainFrame extends javax.swing.JFrame {
     
     
     
-    public void ReadCurrentLine()
+    public void ReadCurrentLine() throws Exception
     {
-        try {
             //parse or read line here
 //        opcode.GenerateOpcode(lines[current_line], jTableRegister);
             pipeline.Cycle();
-        } catch (Exception ex) {
-            outputpane.Print(ex.getMessage());
-            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
