@@ -27,18 +27,21 @@ import javax.swing.table.DefaultTableModel;
 public class Pipeline {
     
     public HashMap<Integer, int[]> address_location_map;
+    public HashMap<String, int[]> data_segment_map;
     public JTextPane jTextPane;
     
     JTable tableRegister;
     JTable tableProgram;
     JTable tablePipelineMap;
     JTable tablePipelineInternalRegister;
+    JTable tableMemory;
     
     HashMap<String, Integer> register_alias_map;
     Map<String, String> pipeline_map;
     
     HashMap<String, Integer> pipeline_internal_register_map;
     HashMap<String, String[]> instruction_parse_map;
+    HashMap<String, String> execution_map;
     
     DefaultTableModel register_model;
     DefaultTableModel program_model;
@@ -53,7 +56,7 @@ public class Pipeline {
     
     boolean branch_executed = false;
     
-    public Pipeline(JTable jTableRegister, JTable jTableProgram, JTable jTablePipelineMap, JTable jTablePipelineRegister)
+    public Pipeline(JTable jTableRegister, JTable jTableProgram, JTable jTablePipelineMap, JTable jTablePipelineRegister, JTable jTableMemory)
     {
         instruction_list = new ArrayList<String>() {{
             add("lw");
@@ -81,6 +84,7 @@ public class Pipeline {
         tableProgram = jTableProgram;
         tablePipelineMap = jTablePipelineMap;
         tablePipelineInternalRegister = jTablePipelineRegister;
+        tableMemory = jTableMemory;
         
         register_model = (DefaultTableModel)tableRegister.getModel();
         program_model = (DefaultTableModel)tableProgram.getModel();
@@ -107,6 +111,7 @@ public class Pipeline {
         }};
         
         pipeline_map = new TreeMap<String, String>();
+        execution_map = new HashMap<String, String>();
     }
     
     public void Cycle() throws Exception
@@ -115,9 +120,13 @@ public class Pipeline {
         String current_pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
         
         int current_counter_pc = FindTableRowByCounterPC(current_pc_hex);
-        String current_state = GetJTableValue(tableProgram, current_counter_pc, 3);
         
-        pipeline_map.put(current_pc_hex, current_state);
+        if (current_counter_pc < tableProgram.getRowCount())
+        {
+            String current_state = GetJTableValue(tableProgram, current_counter_pc, 3);
+            pipeline_map.put(current_pc_hex, current_state);
+        }
+
         
         cycles++;
         pipeline_map_model.addColumn("Cycle "+ (cycles - 1));
@@ -184,8 +193,8 @@ public class Pipeline {
         String instruction_address = GetJTableValue(tableProgram, instruction_pc, 0);  
         
         int ir_row_index = pipeline_internal_register_map.get("PC"); //this is actually not used
-//        String current_pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
-        String current_pc_hex = instruction_address;
+        String current_pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
+//        String current_pc_hex = instruction_address;
         
         int current_pc_program_row = FindTableRowByCounterPC(current_pc_hex);
         
@@ -360,6 +369,14 @@ public class Pipeline {
         int ALUOutput_Decimal = 0;
         String ALUOutput_String = "00000000";
         String imm_hex_opcode = "00000000";
+        String execute_value = "";
+        
+        String param1_hex= "";
+        String param2_hex = "";
+        int param1;
+        int param2;
+        
+        String[] target_instruction = instruction_parse_map.get(instruction_address);
         
         switch (current_instruction)
         {
@@ -376,6 +393,13 @@ public class Pipeline {
                     
                     ALUOutput_Decimal = a + imm;
                     ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal, 32);
+                    
+                    //get datasegment of word value, returns row and col
+                    //go to jTableAddress and find the value of row and col
+                    int[] word_value = data_segment_map.get(target_instruction[1]);
+                    execute_value = GetJTableValue(tableMemory, word_value[0], word_value[1]);
+//                    String rs1_value_hex = GetRegisterHexValueFromRegisterName(target_instruction[0]);
+//                    int rs1_value_dec = Convert.HexToDecimal(rs1_value_hex);
                     break;
                 case "sw":
                     break;
@@ -389,31 +413,46 @@ public class Pipeline {
                     a = Convert.HexToDecimal(id_ex_a_opcode);
                     b = Convert.HexToDecimal(id_ex_b_opcode);
                     
+                    param1_hex = GetRegisterHexValueFromRegisterName(target_instruction[1]);
+                    param2_hex = GetRegisterHexValueFromRegisterName(target_instruction[2]);
+                    param1 = Integer.parseInt(param1_hex);
+                    param2 = Integer.parseInt(param2_hex);
+                    
                     switch(current_instruction)
                     {
                             case "add":
                                 ALUOutput_Decimal = a + b;
+                                execute_value = String.valueOf(param1 + param2);
                                 break;
                             case "and":
                                 ALUOutput_Decimal = a & b;
+                                execute_value = String.valueOf(param1 & param2);
                                 break;
                             case "or":
                                 ALUOutput_Decimal = a | b;
+                                execute_value = String.valueOf(param1 | param2);
                                 break;
                             case "xor":
                                 ALUOutput_Decimal = a ^ b;
+                                execute_value = String.valueOf(param1 ^ param2);
                                 break;
                             case "slt":
                                 ALUOutput_Decimal = (a < b) ? 1 : 0;
+                                int temp = (param1 < param2) ? 1 : 0;
+                                execute_value = String.valueOf(temp);
                                 break;
                             case "sll":
                                 ALUOutput_Decimal = a << b;
+                                execute_value = String.valueOf(param1 << param2);
                                 break;
                             case "srl":
                                 ALUOutput_Decimal = a >> b;
+                                execute_value = String.valueOf(param1 >> param2);
                                 break;
                     }   
                     ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal, 32);
+                    execution_map.put(instruction_address, execute_value);
+                    
                     break;
                 case "addi":
                 case "andi":
@@ -428,33 +467,48 @@ public class Pipeline {
                     imm_hex_opcode = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
                     imm = Convert.HexToDecimal(imm_hex_opcode);
                     
+                    param1_hex = GetRegisterHexValueFromRegisterName(target_instruction[1]);
+                    param2_hex = GetRegisterHexValueFromRegisterName(target_instruction[2]);
+                    
+                    param1 = Integer.parseInt(param1_hex);
+                    param2 = Integer.parseInt(param2_hex);
+                    
                     switch(current_instruction)
                     {
                         case "addi":
                             ALUOutput_Decimal = a + imm;
+                            execute_value = String.valueOf(param1 + param2);
                             break;
                         case "andi":
                             ALUOutput_Decimal = a & imm;
+                            execute_value = String.valueOf(param1 & param2);
                             break;
                         case "slti":
                             ALUOutput_Decimal = (a < imm) ? 1 : 0;
+                            int temp = (param1 < param2) ? 1 : 0;
+                            execute_value = String.valueOf(temp);
                             break;
                         case "ori":
                             ALUOutput_Decimal = a | imm;
+                            execute_value = String.valueOf(param1 | param2);
                             break;
                         case "xori":
                             ALUOutput_Decimal = a ^ imm;
+                            execute_value = String.valueOf(param1 ^ param2);
                             break;
                         case "slli":
                             ALUOutput_Decimal = a << imm;
+                            execute_value = String.valueOf(param1 << param2);
                             break;
                         case "srli":
                             ALUOutput_Decimal = a >> imm;
+                            execute_value = String.valueOf(param1 >> param2);
                             break;
                             
                     }
                     
                     ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal, 32);
+                    execution_map.put(instruction_address, execute_value);
                     break;
                 case "beq":
                 case "bne":
@@ -489,6 +543,8 @@ public class Pipeline {
         
         ir_row_index = pipeline_internal_register_map.get("EX/MEM.ALUOutput");
         pipeline_internal_register_model.setValueAt(ALUOutput_String, ir_row_index, 1);
+        
+        execution_map.put(instruction_address, execute_value);
         
         int current_counter_pc = FindTableRowByCounterPC(instruction_address);
         
@@ -556,6 +612,7 @@ public class Pipeline {
         if(current_counter_pc != -1)
         {
             program_model.setValueAt("MEM", current_counter_pc, 3);
+            pipeline_map_model.setValueAt("MEM", current_counter_pc, cycles);
         }
     }
     
@@ -570,14 +627,23 @@ public class Pipeline {
         int ir_row_index = pipeline_internal_register_map.get("PC");
         String current_pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
         
+        String param1_hex= "";
+        String param2_hex = "";
+        int param1;
+        int param2;
+        
+        String[] target_instruction = instruction_parse_map.get(instruction_address);
+        
         int current_counter_pc = FindTableRowByCounterPC(instruction_address);
         
         if(current_counter_pc != -1)
         {
             program_model.setValueAt("WB", current_counter_pc, 3);
+            pipeline_map_model.setValueAt("WB", current_counter_pc, cycles);
         }
         
         pipeline_map.remove(current_pc_hex);
+        program_model.setValueAt("FIN", current_counter_pc, 3);
     }
     
     

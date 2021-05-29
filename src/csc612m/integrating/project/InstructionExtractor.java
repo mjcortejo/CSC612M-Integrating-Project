@@ -65,12 +65,12 @@ public class InstructionExtractor {
             switch (parsed_line[0])
             {
                     case "lw":
-                        int row_int = data_segment_map.get(parsed_line[2])[0];
-                        int col_int = data_segment_map.get(parsed_line[2])[1];
-                        String row_string = String.valueOf(row_int);
-                        String col_string = String.valueOf(col_int);
+//                        int row_int = data_segment_map.get(parsed_line[2])[0];
+//                        int col_int = data_segment_map.get(parsed_line[2])[1];
+//                        String row_string = String.valueOf(row_int);
+//                        String col_string = String.valueOf(col_int);
                         
-                        instruction_parse_map.put(hex_address, new String[]{parsed_line[1], row_string, col_string});
+                        instruction_parse_map.put(hex_address, new String[]{parsed_line[1], parsed_line[2]});
                         break;
                     case "sw":
                         String offset = GetIMMBinaryOfOffset(parsed_line[2]);

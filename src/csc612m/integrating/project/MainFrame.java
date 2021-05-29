@@ -51,7 +51,7 @@ public class MainFrame extends javax.swing.JFrame {
     public MainFrame() {
         initComponents();
 
-        pipeline = new Pipeline(jTableRegister, jTableProgram, jTablePipelineMap, jTablePipelineRegister);
+        pipeline = new Pipeline(jTableRegister, jTableProgram, jTablePipelineMap, jTablePipelineRegister, jTableMemory);
         outputpane = new OutputPane(jTextOutput);
         
         
@@ -513,6 +513,7 @@ public class MainFrame extends javax.swing.JFrame {
                 memory_table.setValueAt(data_value_hex, row, column);
             }
             sourcecode_section_state = 2;
+            pipeline.data_segment_map = data_segment_map;
         }
         
         if (sourcecode_section_state == 2)//final state
@@ -644,6 +645,7 @@ public class MainFrame extends javax.swing.JFrame {
 //        opcode.GenerateOpcode(lines[current_line], jTableRegister);
             pipeline.Cycle();
         } catch (Exception ex) {
+            outputpane.Print(ex.getMessage());
             Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
