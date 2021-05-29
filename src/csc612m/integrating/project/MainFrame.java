@@ -579,7 +579,12 @@ public class MainFrame extends javax.swing.JFrame {
     private void jBtnNextLineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnNextLineActionPerformed
         try {
             // TODO add your handling code here:
-            ReadCurrentLine();
+            boolean cycling = ReadCurrentLine();
+            
+            if(!cycling)
+            {
+                outputpane.Print("No More Iterations");
+            }
         } catch (Exception ex) {
             Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
             outputpane.Print(ex.getMessage());
@@ -601,7 +606,11 @@ public class MainFrame extends javax.swing.JFrame {
         while (is_ok)
         {
             try {
-                ReadCurrentLine();
+                boolean cycling = ReadCurrentLine();
+                if (!cycling)
+                {
+                    break;
+                }
             } catch (Exception ex) {
                 Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
                 outputpane.Print(ex.getMessage());
@@ -650,11 +659,11 @@ public class MainFrame extends javax.swing.JFrame {
     
     
     
-    public void ReadCurrentLine() throws Exception
+    public boolean ReadCurrentLine() throws Exception
     {
             //parse or read line here
 //        opcode.GenerateOpcode(lines[current_line], jTableRegister);
-            pipeline.Cycle();
+            return pipeline.Cycle();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

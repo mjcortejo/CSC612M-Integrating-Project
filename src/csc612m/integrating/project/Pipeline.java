@@ -9,8 +9,10 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -114,8 +116,9 @@ public class Pipeline {
         execution_map = new HashMap<String, String>();
     }
     
-    public void Cycle() throws Exception
-    {        
+    public boolean Cycle() throws Exception
+    {
+        boolean cycling = true;
         int ir_row_index = pipeline_internal_register_map.get("PC");
         String current_pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
         
@@ -135,17 +138,21 @@ public class Pipeline {
         cycles++;
         pipeline_map_model.addColumn("Cycle "+ (cycles - 1));
         
-        for (Map.Entry<String, String> instruction: pipeline_map.entrySet())
+        Iterator<Map.Entry<String, String>> pipeline_map_it = pipeline_map.entrySet().iterator();
+        
+        while (pipeline_map_it.hasNext())
         {
             //get state of each pc counter
-            System.out.println(instruction.getKey());
+            Map.Entry<String, String> instruction = pipeline_map_it.next();
+            System.out.println(instruction.getKey()
+            );
             int instruction_pc = FindTableRowByCounterPC(instruction.getKey());
             
             String instruction_state = GetJTableValue(tableProgram, instruction_pc, 3);
             
-            if (instruction_state.equals("WB"))
+            if (instruction_state.equals("FIN"))
             {
-                pipeline_map.remove(instruction.getKey());
+                pipeline_map_it.remove();
             }
             else if (instruction_state.equals("MEM"))
             {
@@ -168,6 +175,13 @@ public class Pipeline {
                 InstructionFetch(instruction_pc);
             }
         }
+        
+        if (!pipeline_map_it.hasNext())
+        {
+            cycling = false;
+        }
+        
+        return cycling;
         //store each PC in a hashmap
         //each hashmap will act like its own thread
         //each hashmap value will be updated independently
