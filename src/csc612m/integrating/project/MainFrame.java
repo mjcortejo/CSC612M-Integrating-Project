@@ -609,6 +609,7 @@ public class MainFrame extends javax.swing.JFrame {
                 boolean cycling = ReadCurrentLine();
                 if (!cycling)
                 {
+                    is_ok = false;
                     break;
                 }
             } catch (Exception ex) {
