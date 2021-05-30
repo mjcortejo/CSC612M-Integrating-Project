@@ -51,7 +51,6 @@ public class MainFrame extends javax.swing.JFrame {
     public MainFrame() {
         initComponents();
 
-        pipeline = new Pipeline(jTableRegister, jTableProgram, jTablePipelineMap, jTablePipelineRegister, jTableMemory);
         outputpane = new OutputPane(jTextOutput);
         
         
@@ -88,6 +87,7 @@ public class MainFrame extends javax.swing.JFrame {
             put("t5", 30);
             put("t6", 31);
         }};
+        pipeline = new Pipeline(jTableRegister, jTableProgram, jTablePipelineMap, jTablePipelineRegister, jTableMemory, register_alias_map);
         PopulateDataSegmentAddress();
         
 //        attributeSet = new SimpleAttributeSet();

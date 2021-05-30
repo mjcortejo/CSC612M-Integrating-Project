@@ -65,18 +65,13 @@ public class InstructionExtractor {
             switch (parsed_line[0])
             {
                     case "lw":
-//                        int row_int = data_segment_map.get(parsed_line[2])[0];
-//                        int col_int = data_segment_map.get(parsed_line[2])[1];
-//                        String row_string = String.valueOf(row_int);
-//                        String col_string = String.valueOf(col_int);
-                        
                         instruction_parse_map.put(hex_address, new String[]{parsed_line[1], parsed_line[2]});
                         break;
                     case "sw":
-                        String offset = GetIMMBinaryOfOffset(parsed_line[2]);
+                        String offset = GetImmOfOffset(parsed_line[2]);
                         String target = GetTargetOffsetRegister(parsed_line[2]);
-                        instruction_parse_map.put(hex_address, new String[]{parsed_line[1], offset, target});
-                        break;
+                        instruction_parse_map.put(hex_address, new String[]{parsed_line[1], offset, target}); //destination, offset, target
+                         break;
                     case "add":
                     case "and":
                     case "or":
@@ -198,7 +193,7 @@ public class InstructionExtractor {
         return array_inst_params; //sw, x2, x3 etc
     }
     
-    public String GetIMMBinaryOfOffset(String full_param)
+    public String GetImmOfOffset(String full_param)
     { //accepts 0x100(x8) (0x100 is hexadecimal)
         String[] pre_offset_params = full_param.split("\\("); //this removes the ( in (x8) <-- example
         String offset = pre_offset_params[0]; //we should be able to get the offset address
@@ -214,6 +209,7 @@ public class InstructionExtractor {
         if (offset.contains("0x")) //if offset is hex
         {
             offset = offset.replace("0x", "");
+            offset = String.valueOf(Convert.HexToDecimal(offset));
         }
         return offset;
     }

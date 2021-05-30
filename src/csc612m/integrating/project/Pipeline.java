@@ -49,6 +49,7 @@ public class Pipeline {
     DefaultTableModel program_model;
     DefaultTableModel pipeline_map_model;
     DefaultTableModel pipeline_internal_register_model;
+    DefaultTableModel memory_segment_model;
     
     List<String> instruction_list;
     
@@ -62,7 +63,7 @@ public class Pipeline {
     
     String target_branch = "";
     
-    public Pipeline(JTable jTableRegister, JTable jTableProgram, JTable jTablePipelineMap, JTable jTablePipelineRegister, JTable jTableMemory)
+    public Pipeline(JTable jTableRegister, JTable jTableProgram, JTable jTablePipelineMap, JTable jTablePipelineRegister, JTable jTableMemory, HashMap register_alias_map_param)
     {
         instruction_list = new ArrayList<String>() {{
             add("lw");
@@ -91,11 +92,13 @@ public class Pipeline {
         tablePipelineMap = jTablePipelineMap;
         tablePipelineInternalRegister = jTablePipelineRegister;
         tableMemory = jTableMemory;
+        register_alias_map = register_alias_map_param;
         
         register_model = (DefaultTableModel)tableRegister.getModel();
         program_model = (DefaultTableModel)tableProgram.getModel();
         pipeline_map_model = (DefaultTableModel) jTablePipelineMap.getModel();
         pipeline_internal_register_model = (DefaultTableModel) jTablePipelineRegister.getModel();
+        memory_segment_model = (DefaultTableModel) jTableMemory.getModel();
         
         pipeline_internal_register_map = new HashMap<String, Integer>() {{
             put("IF/ID.IR", 0);
@@ -452,7 +455,15 @@ public class Pipeline {
 //                    String rs1_value_hex = GetRegisterHexValueFromRegisterName(target_instruction[0]);
 //                    int rs1_value_dec = Convert.HexToDecimal(rs1_value_hex);
                     break;
-                case "sw":
+                case "sw":                    
+//                    param1_hex = GetRegisterHexValueFromRegisterName(target_instruction[0]); //destination
+                    int offset = Integer.parseInt(target_instruction[1]);
+                    String target_hex = GetRegisterHexValueFromRegisterName(target_instruction[1]);
+                    int target_int = Convert.HexToDecimal(target_hex);
+                    int effective_memory_int = offset + target_int;
+                    String effective_memory_hex = Convert.IntDecimalToHex(effective_memory_int, 32);
+
+                    execution_map.put(instruction_address, effective_memory_hex); //effective_memory_hex, which means, rs1 will be assigned to the memory adddres
                     break;
                 case "add":
                 case "and":
@@ -684,10 +695,27 @@ public class Pipeline {
         
         String[] target_instruction = instruction_parse_map.get(instruction_address);
         
-        int register_destination_int = GetRegisterTableRow(target_instruction[0]);
+        String[] branch_list = {"beq","bne","blt","bge"};
+        boolean is_branch_instruction = Arrays.stream(branch_list).anyMatch(current_instruction::equals);
         
-        //wrrite to register table
-        register_model.setValueAt(execution_map.get(instruction_address), register_destination_int, 2);
+        if (current_instruction == "sw")
+        {
+            String target_memory_address = execution_map.get(instruction_address);
+            String value = GetRegisterHexValueFromRegisterName(target_instruction[0]);
+            int[] memory_table_loc = address_location_map.get(target_memory_address);
+            memory_segment_model.setValueAt(value, memory_table_loc[0], memory_table_loc[1]);
+        }
+        else if (is_branch_instruction)
+        {
+            //do nothing basically
+        }
+        else
+        {
+            int register_destination_int = GetRegisterTableRow(target_instruction[0]);
+            //write to register table
+            register_model.setValueAt(execution_map.get(instruction_address), register_destination_int, 2);
+        }
+
         
         int current_counter_pc = FindTableRowByCounterPC(instruction_address);
         
