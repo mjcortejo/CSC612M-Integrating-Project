@@ -52,6 +52,8 @@ public class Pipeline {
     
     List<String> instruction_list;
     
+    Iterator<Map.Entry<String, String>> pipeline_map_it;
+    
     int cycles = 1;
     
     int previous_pc = 0;
@@ -119,65 +121,74 @@ public class Pipeline {
     public boolean Cycle() throws Exception
     {
         boolean cycling = true;
-        int ir_row_index = pipeline_internal_register_map.get("PC");
-        String current_pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
         
-        int current_counter_pc = FindTableRowByCounterPC(current_pc_hex);
-        
-        if (current_counter_pc == -1)
+        try
         {
-            System.out.println("Hello");
-        }
-        
-        if (current_counter_pc < tableProgram.getRowCount() && current_counter_pc != -1)
-        {
-            String current_state = GetJTableValue(tableProgram, current_counter_pc, 3);
-            pipeline_map.put(current_pc_hex, current_state);
-        }
-        
-        cycles++;
-        pipeline_map_model.addColumn("Cycle "+ (cycles - 1));
-        
-        Iterator<Map.Entry<String, String>> pipeline_map_it = pipeline_map.entrySet().iterator();
-        
-        while (pipeline_map_it.hasNext())
-        {
-            //get state of each pc counter
-            Map.Entry<String, String> instruction = pipeline_map_it.next();
-            System.out.println(instruction.getKey()
-            );
-            int instruction_pc = FindTableRowByCounterPC(instruction.getKey());
+            int ir_row_index = pipeline_internal_register_map.get("PC");
+            String current_pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
+
+            int current_counter_pc = FindTableRowByCounterPC(current_pc_hex);
+
+            if (current_counter_pc == -1)
+            {
+                System.out.println("Hello");
+            }
+
+            if (current_counter_pc < tableProgram.getRowCount() && current_counter_pc != -1)
+            {
+                String current_state = GetJTableValue(tableProgram, current_counter_pc, 3);
+                pipeline_map.put(current_pc_hex, current_state);
+            }
+
+            cycles++;
+            pipeline_map_model.addColumn("Cycle "+ (cycles - 1));
+
+            pipeline_map_it = pipeline_map.entrySet().iterator();
+
+            while (pipeline_map_it.hasNext())
+            {
+                //get state of each pc counter
+                Map.Entry<String, String> instruction = pipeline_map_it.next();
+                System.out.println(instruction.getKey()
+                );
+                int instruction_pc = FindTableRowByCounterPC(instruction.getKey());
+
+                String instruction_state = GetJTableValue(tableProgram, instruction_pc, 3);
+
+                if (instruction_state.equals("WB"))
+                {
+                    pipeline_map_it.remove();
+                }
+                else if (instruction_state.equals("MEM"))
+                {
+                    WriteBack(instruction_pc);
+                }
+                else if(instruction_state.equals("EX"))
+                {
+                    Memory(instruction_pc);
+                }
+                else if (instruction_state.equals("ID"))
+                {
+                    Execute(instruction_pc);
+                }
+                else if (instruction_state.equals("IF"))
+                {
+                    InstructionDecode(instruction_pc);
+                }
+                else if (instruction_state.equals(""))//assumes has no state yet
+                {
+                    InstructionFetch(instruction_pc);
+                }
+            }
             
-            String instruction_state = GetJTableValue(tableProgram, instruction_pc, 3);
-            
-            if (instruction_state.equals("FIN"))
+            if (pipeline_map.isEmpty())
             {
-                pipeline_map_it.remove();
-            }
-            else if (instruction_state.equals("MEM"))
-            {
-                WriteBack(instruction_pc);
-            }
-            else if(instruction_state.equals("EX"))
-            {
-                Memory(instruction_pc);
-            }
-            else if (instruction_state.equals("ID"))
-            {
-                Execute(instruction_pc);
-            }
-            else if (instruction_state.equals("IF"))
-            {
-                InstructionDecode(instruction_pc);
-            }
-            else if (instruction_state.equals(""))//assumes has no state yet
-            {
-                InstructionFetch(instruction_pc);
+                cycling = false;
             }
         }
-        
-        if (!pipeline_map_it.hasNext())
+        catch(Exception ex)
         {
+            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
             cycling = false;
         }
         
@@ -249,7 +260,7 @@ public class Pipeline {
 
             if (branch_executed)
             {
-                pipeline_map.remove(current_pc_hex);
+                pipeline_map_it.remove();
                 branch_executed = false;
             }
         }
@@ -668,9 +679,6 @@ public class Pipeline {
             program_model.setValueAt("WB", current_counter_pc, 3);
             pipeline_map_model.setValueAt("WB", current_counter_pc, cycles);
         }
-        
-        pipeline_map.remove(current_pc_hex);
-        program_model.setValueAt("FIN", current_counter_pc, 3);
     }
     
     
