@@ -167,6 +167,18 @@ public class Convert {
         return BinaryToHex(binary);
     }
     
+    public static String DecimalToHex(String decimal)
+    {
+        int[] binary = DecimalToBinary(decimal);
+        return BinaryToHex(binary);
+    }
+    
+    public static String DecimalToHex(String decimal, int num_bits)
+    {
+        int[] binary = DecimalToBinary(decimal, num_bits);
+        return BinaryToHex(binary);
+    }
+    
     public static int BinaryToDecimal(int[] binary)
     {
         int dec_value = 0;

@@ -60,6 +60,8 @@ public class Pipeline {
     
     boolean branch_executed = false;
     
+    String target_branch = "";
+    
     public Pipeline(JTable jTableRegister, JTable jTableProgram, JTable jTablePipelineMap, JTable jTablePipelineRegister, JTable jTableMemory)
     {
         instruction_list = new ArrayList<String>() {{
@@ -129,11 +131,6 @@ public class Pipeline {
 
             int current_counter_pc = FindTableRowByCounterPC(current_pc_hex);
 
-            if (current_counter_pc == -1)
-            {
-                System.out.println("Hello");
-            }
-
             if (current_counter_pc < tableProgram.getRowCount() && current_counter_pc != -1)
             {
                 String current_state = GetJTableValue(tableProgram, current_counter_pc, 3);
@@ -144,6 +141,11 @@ public class Pipeline {
             pipeline_map_model.addColumn("Cycle "+ (cycles - 1));
 
             pipeline_map_it = pipeline_map.entrySet().iterator();
+            
+            if ((cycles - 1) == 3)
+            {
+                System.out.println("stop");
+            }
 
             while (pipeline_map_it.hasNext())
             {
@@ -260,6 +262,15 @@ public class Pipeline {
 
             if (branch_executed)
             {
+                System.out.println("Branch Instruction Detected");
+//                    
+                ir_row_index = pipeline_internal_register_map.get("PC");
+
+                pipeline_internal_register_model.setValueAt(target_branch, ir_row_index, 1);
+
+                ir_row_index = pipeline_internal_register_map.get("IF/ID.NPC");
+                pipeline_internal_register_model.setValueAt(target_branch, ir_row_index, 1);
+                
                 pipeline_map_it.remove();
                 branch_executed = false;
             }
@@ -348,18 +359,19 @@ public class Pipeline {
                 
                 if (branch_executed)
                 {
-                    System.out.println("Branch Instruction Detected");
-                    
-                    ir_row_index = pipeline_internal_register_map.get("PC");
-//                    String current_pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
-//                    pipeline_map.remove(current_pc_hex);//stops the next pipeline from running
-//                    int current_counter_pc = FindTableRowByCounterPC(instruction_address);
-//                    pipeline_map_model.setValueAt("DEL", current_counter_pc, cycles);
-                    
-                    pipeline_internal_register_model.setValueAt(target_instruction[2], ir_row_index, 1);
-
-                    ir_row_index = pipeline_internal_register_map.get("IF/ID.NPC");
-                    pipeline_internal_register_model.setValueAt(target_instruction[2], ir_row_index, 1);
+                    target_branch = target_instruction[2];
+//                    System.out.println("Branch Instruction Detected");
+//                    
+//                    ir_row_index = pipeline_internal_register_map.get("PC");
+////                    String current_pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
+////                    pipeline_map.remove(current_pc_hex);//stops the next pipeline from running
+////                    int current_counter_pc = FindTableRowByCounterPC(instruction_address);
+////                    pipeline_map_model.setValueAt("DEL", current_counter_pc, cycles);
+//                    
+//                    pipeline_internal_register_model.setValueAt(target_instruction[2], ir_row_index, 1);
+//
+//                    ir_row_index = pipeline_internal_register_map.get("IF/ID.NPC");
+//                    pipeline_internal_register_model.setValueAt(target_instruction[2], ir_row_index, 1);
                 }
                 break;
             default:
@@ -407,7 +419,7 @@ public class Pipeline {
         int ALUOutput_Decimal = 0;
         String ALUOutput_String = "00000000";
         String imm_hex_opcode = "00000000";
-        String execute_value = "";
+        String execute_value = "00000000";
         
         String param1_hex= "";
         String param2_hex = "";
@@ -436,6 +448,7 @@ public class Pipeline {
                     //go to jTableAddress and find the value of row and col
                     int[] word_value = data_segment_map.get(target_instruction[1]);
                     execute_value = GetJTableValue(tableMemory, word_value[0], word_value[1]);
+                    execution_map.put(instruction_address, execute_value);
 //                    String rs1_value_hex = GetRegisterHexValueFromRegisterName(target_instruction[0]);
 //                    int rs1_value_dec = Convert.HexToDecimal(rs1_value_hex);
                     break;
@@ -489,8 +502,8 @@ public class Pipeline {
                                 break;
                     }   
                     ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal, 32);
+                    execute_value = Convert.DecimalToHex(execute_value, 32);
                     execution_map.put(instruction_address, execute_value);
-                    
                     break;
                 case "addi":
                 case "andi":
@@ -546,6 +559,7 @@ public class Pipeline {
                     }
                     
                     ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal, 32);
+                    execute_value = Convert.DecimalToHex(execute_value, 32);
                     execution_map.put(instruction_address, execute_value);
                     break;
                 case "beq":
@@ -581,8 +595,6 @@ public class Pipeline {
         
         ir_row_index = pipeline_internal_register_map.get("EX/MEM.ALUOutput");
         pipeline_internal_register_model.setValueAt(ALUOutput_String, ir_row_index, 1);
-        
-        execution_map.put(instruction_address, execute_value);
         
         int current_counter_pc = FindTableRowByCounterPC(instruction_address);
         
@@ -672,6 +684,11 @@ public class Pipeline {
         
         String[] target_instruction = instruction_parse_map.get(instruction_address);
         
+        int register_destination_int = GetRegisterTableRow(target_instruction[0]);
+        
+        //wrrite to register table
+        register_model.setValueAt(execution_map.get(instruction_address), register_destination_int, 2);
+        
         int current_counter_pc = FindTableRowByCounterPC(instruction_address);
         
         if(current_counter_pc != -1)
@@ -695,7 +712,7 @@ public class Pipeline {
         return result;
     }
     
-    public int GetRegisterTableRow(String register) throws Exception{
+    public int GetRegisterTableRow(String register){
         int table_row = 0;
         if (register.charAt(0) == 'x') //this will check if the name called starts with xN or its original register name (etc. t0, a1)
         {
