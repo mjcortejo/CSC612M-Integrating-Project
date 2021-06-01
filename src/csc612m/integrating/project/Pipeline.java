@@ -207,12 +207,12 @@ public class Pipeline {
     {
             String[] parsed_line = instruction.split(" ");
             
-            if (!instruction_list.contains(parsed_line[0])) //if the first param is a label, then remove the label from array
+            if (!instruction_list.contains(parsed_line[0].toLowerCase())) //if the first param is a label, then remove the label from array
             {
                 parsed_line = Arrays.copyOfRange(parsed_line, 1, parsed_line.length); //restructures the array index to original without changing the code below
             }
             
-            return parsed_line [0];
+            return parsed_line[0];
     }
     
     public String GetJTableValue(JTable targetTable, int row, int column)
@@ -419,7 +419,7 @@ public class Pipeline {
         
         String[] target_instruction = instruction_parse_map.get(instruction_address);
         
-        switch (current_instruction)
+        switch (current_instruction.toLowerCase())
         {
                 case "lw":
                     a = Convert.HexToDecimal(id_ex_a_opcode);
@@ -618,7 +618,7 @@ public class Pipeline {
         
         
         String id_ex_mem_ir;
-        switch (current_instruction)
+        switch (current_instruction.toLowerCase())
         {
             case "lw":
                 //MEM/WB.IR <- EX/MEM.IR
@@ -688,7 +688,7 @@ public class Pipeline {
         String instruction_address = GetJTableValue(tableProgram, instruction_pc, 0);
 
         String instruction_line = GetJTableValue(tableProgram, instruction_pc, 2);  
-        String current_instruction = ExtractInstruction(instruction_line);
+        String current_instruction = ExtractInstruction(instruction_line).toLowerCase();
         
         int ir_row_index = pipeline_internal_register_map.get("PC");
         String current_pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
@@ -703,7 +703,7 @@ public class Pipeline {
         String[] branch_list = {"beq","bne","blt","bge"};
         boolean is_branch_instruction = Arrays.stream(branch_list).anyMatch(current_instruction::equals);
 
-        if (!is_branch_instruction && current_instruction != "sw")
+        if (!is_branch_instruction && !current_instruction.equals("sw"))
         {
             int register_destination_int = GetRegisterTableRow(target_instruction[0]);
             //write to register table
