@@ -88,6 +88,7 @@ public class MainFrame extends javax.swing.JFrame {
             put("t6", 31);
         }};
         pipeline = new Pipeline(jTableRegister, jTableProgram, jTablePipelineMap, jTablePipelineRegister, jTableMemory, register_alias_map);
+        pipeline.outputpane = outputpane;
         PopulateDataSegmentAddress();
         
 //        attributeSet = new SimpleAttributeSet();
@@ -460,6 +461,11 @@ public class MainFrame extends javax.swing.JFrame {
                     current_parse_line = i;
                     break;
                 }
+                else if (current.contains(".text"))
+                {
+                    sourcecode_section_state = 2;
+                    current_parse_line = i;
+                }
             }
         }
         
@@ -485,22 +491,28 @@ public class MainFrame extends javax.swing.JFrame {
                 
                 if(m.find())
                 {
-                    String var_name = m.group(1);
-                    String data_type = m.group(2);
-                    String value = m.group(3);
-                    int value_int = Integer.parseInt(value);
-
-                    if (current_memory_col > 7)
+                    try
                     {
-                        current_memory_row++;
-                        current_memory_col = 1;
+                        String var_name = m.group(1);
+                        String data_type = m.group(2);
+                        String value = m.group(3);
+                        int value_int = Integer.parseInt(value);
+
+                        if (current_memory_col > 7)
+                        {
+                            current_memory_row++;
+                            current_memory_col = 1;
+                        }
+                        data_segment_map.put(var_name.replace(":", ""), new int[]{current_memory_row, current_memory_col, value_int});
+                        current_memory_col++;
                     }
-                    data_segment_map.put(var_name.replace(":", ""), new int[]{current_memory_row, current_memory_col, value_int});
-                    current_memory_col++;
+                    catch(Exception ex)
+                    {
+                        outputpane.Print("Invalid line at "+(current_parse_line + 1) + " with instruction "+lines[i]);
+                    }
                 }
                 current_parse_line = i;
-                
-                
+  
             }
             
             for (Map.Entry<String, int[]> pair: data_segment_map.entrySet())
@@ -513,11 +525,11 @@ public class MainFrame extends javax.swing.JFrame {
                 memory_table.setValueAt(data_value_hex, row, column);
             }
             sourcecode_section_state = 2;
-            pipeline.data_segment_map = data_segment_map;
         }
         
         if (sourcecode_section_state == 2)//final state
         {
+            pipeline.data_segment_map = data_segment_map;
             PopulateProgramTextSegmentAddress(current_parse_line);
         }
         outputpane.Print("Finish Compiling");
@@ -614,7 +626,7 @@ public class MainFrame extends javax.swing.JFrame {
                 }
             } catch (Exception ex) {
                 Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
-                outputpane.Print(ex.getMessage());
+                outputpane.Print("Error at line "+(pipeline.currently_visited_program_number));
                 break;
             }
         }
