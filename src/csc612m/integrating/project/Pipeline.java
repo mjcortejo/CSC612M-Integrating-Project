@@ -330,7 +330,7 @@ public class Pipeline {
 //        String current_state = GetJTableValue(tableProgram, current_counter, 3);
 
 //        branch_executed = false;
-        switch (current_instruction)
+        switch (current_instruction.toLowerCase())
         {
             case "beq":
             case "bne":
@@ -344,7 +344,7 @@ public class Pipeline {
                 String rs2_value_hex = GetRegisterHexValueFromRegisterName(target_instruction[1]);
                 int rs2_value_dec = Convert.HexToDecimal(rs2_value_hex);
                 
-                switch(current_instruction)
+                switch(current_instruction.toLowerCase())
                 {
                     case "beq":
                         if (rs1_value_dec == rs2_value_dec) branch_executed = true;
@@ -469,7 +469,7 @@ public class Pipeline {
                     param1 = Convert.HexToDecimal(param1_hex);
                     param2 = Convert.HexToDecimal(param2_hex);
                     
-                    switch(current_instruction)
+                    switch(current_instruction.toLowerCase())
                     {
                             case "add":
                                 ALUOutput_Decimal = a + b;
@@ -525,7 +525,7 @@ public class Pipeline {
                     param1 = Convert.HexToDecimal(param1_hex);
                     param2 = Convert.HexToDecimal(param2_hex);
                     
-                    switch(current_instruction)
+                    switch(current_instruction.toLowerCase())
                     {
                         case "addi":
                             ALUOutput_Decimal = a + imm;
@@ -575,7 +575,7 @@ public class Pipeline {
                     
                     b = Convert.HexToDecimal(id_ex_b_opcode);
                     
-                    switch(current_instruction)
+                    switch(current_instruction.toLowerCase())
                     {
                         case "beq":
                             ALUOutput_Decimal = (a == b) ? 1 : 0;
@@ -632,7 +632,7 @@ public class Pipeline {
 
                 String target_memory_address = execution_map.get(instruction_address);
                 String value = GetRegisterHexValueFromRegisterName(target_instruction[0]);
-                int[] memory_table_loc = address_location_map.get(target_memory_address);
+                int[] memory_table_loc = address_location_map.get(Integer.parseInt(target_memory_address));
                 try
                 {
                     memory_segment_model.setValueAt(value, memory_table_loc[0], memory_table_loc[1]);
@@ -640,7 +640,6 @@ public class Pipeline {
                 catch(Exception ex)
                 {
                     outputpane.Print("Invalid memory address " + target_memory_address);
-//                    throw new Exception("Invalid memory address " + target_memory_address);
                     break;
                 }
             case "add":
