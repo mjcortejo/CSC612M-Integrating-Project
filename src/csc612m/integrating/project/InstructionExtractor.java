@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JTable;
 
 /**
@@ -16,6 +18,8 @@ import javax.swing.JTable;
  * @author mark
  */
 public class InstructionExtractor {
+    
+    public OutputPane outputpane;
     HashMap<String, String[]> instruction_parse_map;
     HashMap<String, int[]> data_segment_map;
     
@@ -54,61 +58,70 @@ public class InstructionExtractor {
     
     public HashMap<String, String[]> ExtractParams() //this function targets the <PC>, <line params> output
     {
+        String line = "";
         for (int i = 0; i < jTableProgram.getRowCount(); i++)
         {
-            String hex_address = GetJTableValue(jTableProgram, i, 0);
-            ArrayList<String> parsed_params = new ArrayList<String>();
-            int line_number = FindTableRowByCounterPC(hex_address);
-            String line = GetJTableValue(jTableProgram, line_number, 2);
-            String[] parsed_line = ParseLine(line);
-            
-            String offset;
-            String target;
-            
-            switch (parsed_line[0])
+            try
             {
-                    case "lw":
-                        offset = GetImmOfOffset(parsed_line[2]);
-                        target = GetTargetOffsetRegister(parsed_line[2]);
-                        instruction_parse_map.put(hex_address, new String[]{parsed_line[1], offset, target});
-                        break;
-                    case "sw":
-                        offset = GetImmOfOffset(parsed_line[2]);
-                        target = GetTargetOffsetRegister(parsed_line[2]);
-                        instruction_parse_map.put(hex_address, new String[]{parsed_line[1], offset, target});
-                         break;
-                    case "add":
-                    case "and":
-                    case "or":
-                    case "xor":
-                    case "sll":
-                    case "slt":
-                    case "srl":
-                        instruction_parse_map.put(hex_address, new String[]{parsed_line[1], parsed_line[2], parsed_line[3]});
-                        break;
-                    case "addi":
-                    case "andi":
-                    case "slti":
-                    case "ori":
-                    case "xori":
-                    case "slli":
-                    case "srli":
-                        instruction_parse_map.put(hex_address, new String[]{parsed_line[1], parsed_line[2], parsed_line[3]});
-                        break;
-                    case "beq":
-                    case "bne":
-                    case "blt":
-                    case "bge":
-                        String branch_hexadecimal = FindTableRowFromLabelHexValue(parsed_line[3]); //params 3 is the target branch label
-                        
-                        int current_line_integer = Convert.HexToDecimal(hex_address);
-                        int branch_integer = Convert.HexToDecimal(branch_hexadecimal);
-                        
-                        int result = branch_integer - current_line_integer;
-                        
-                        instruction_parse_map.put(hex_address, new String[]{parsed_line[1], parsed_line[2], branch_hexadecimal}); //branch_hexadecimal is target of 
-                        break;  
+                String hex_address = GetJTableValue(jTableProgram, i, 0);
+                ArrayList<String> parsed_params = new ArrayList<String>();
+                int line_number = FindTableRowByCounterPC(hex_address);
+                line = GetJTableValue(jTableProgram, line_number, 2);
+                String[] parsed_line = ParseLine(line);
 
+                String offset;
+                String target;
+
+                switch (parsed_line[0].toLowerCase())
+                {
+                        case "lw":
+                            offset = GetImmOfOffset(parsed_line[2]);
+                            target = GetTargetOffsetRegister(parsed_line[2]);
+                            instruction_parse_map.put(hex_address, new String[]{parsed_line[1], offset, target});
+                            break;
+                        case "sw":
+                            offset = GetImmOfOffset(parsed_line[2]);
+                            target = GetTargetOffsetRegister(parsed_line[2]);
+                            instruction_parse_map.put(hex_address, new String[]{parsed_line[1], offset, target});
+                             break;
+                        case "add":
+                        case "and":
+                        case "or":
+                        case "xor":
+                        case "sll":
+                        case "slt":
+                        case "srl":
+                            instruction_parse_map.put(hex_address, new String[]{parsed_line[1], parsed_line[2], parsed_line[3]});
+                            break;
+                        case "addi":
+                        case "andi":
+                        case "slti":
+                        case "ori":
+                        case "xori":
+                        case "slli":
+                        case "srli":
+                            instruction_parse_map.put(hex_address, new String[]{parsed_line[1], parsed_line[2], parsed_line[3]});
+                            break;
+                        case "beq":
+                        case "bne":
+                        case "blt":
+                        case "bge":
+                            String branch_hexadecimal = FindTableRowFromLabelHexValue(parsed_line[3]); //params 3 is the target branch label
+
+                            int current_line_integer = Convert.HexToDecimal(hex_address);
+                            int branch_integer = Convert.HexToDecimal(branch_hexadecimal);
+
+                            int result = branch_integer - current_line_integer;
+
+                            instruction_parse_map.put(hex_address, new String[]{parsed_line[1], parsed_line[2], branch_hexadecimal}); //branch_hexadecimal is target of 
+                            break;  
+
+                }
+            }
+            catch(Exception ex)
+            {
+                Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+                outputpane.Print("Error in instruction " + line );
             }
         }
         return instruction_parse_map;
