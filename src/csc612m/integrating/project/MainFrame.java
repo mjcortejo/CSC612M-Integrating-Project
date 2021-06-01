@@ -89,6 +89,7 @@ public class MainFrame extends javax.swing.JFrame {
         }};
         pipeline = new Pipeline(jTableRegister, jTableProgram, jTablePipelineMap, jTablePipelineRegister, jTableMemory, register_alias_map);
         pipeline.outputpane = outputpane;
+        
         PopulateDataSegmentAddress();
         
 //        attributeSet = new SimpleAttributeSet();
@@ -472,7 +473,7 @@ public class MainFrame extends javax.swing.JFrame {
         int current_memory_row = 0;
         int current_memory_col = 1;
         
-        String pattern = "(\\w+:) (.\\w+) (\\d+)";
+        String pattern = "(\\w+:) (.\\w+) (0x[a-z0-9]+|\\d+)";
         Pattern variable_pattern = Pattern.compile(pattern);
         
         if (sourcecode_section_state == 1) //currently in .data section
@@ -496,7 +497,7 @@ public class MainFrame extends javax.swing.JFrame {
                         String var_name = m.group(1);
                         String data_type = m.group(2);
                         String value = m.group(3);
-                        int value_int = Integer.parseInt(value);
+                        int value_int = ExtractImmediateValueToDecimal(value);
 
                         if (current_memory_col > 7)
                         {
@@ -536,14 +537,20 @@ public class MainFrame extends javax.swing.JFrame {
         
     }//GEN-LAST:event_jBtnAssembleActionPerformed
 
-//     public void OutputText(String s)
-//     {
-//        try {
-//            textpane.insertString(textpane.getLength(), s+"\n", attributeSet);
-//        } catch (Exception ex) {
-//            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//     }
+    public static int ExtractImmediateValueToDecimal(String imm_value)
+    {
+        int int_value = 0;
+        if (imm_value.contains("0x"))
+        {
+            imm_value = imm_value.replace("0x", "");
+            int_value = Convert.HexToDecimal(imm_value);
+        }
+        else
+        {
+            int_value = Integer.parseInt(imm_value);
+        }
+        return int_value;
+    }
 
     /***
      * Populates the jTableProgram table from the source code
@@ -553,6 +560,7 @@ public class MainFrame extends javax.swing.JFrame {
     {
         opcode = new Opcode(jTableRegister, jTableProgram, jTableMemory, data_segment_map);
         instruction_extractor = new InstructionExtractor(jTableProgram, data_segment_map);
+        instruction_extractor.outputpane = outputpane;
         lines = jEditorPane1.getText().split("\n");
         this.program_table = (DefaultTableModel)jTableProgram.getModel();
         this.pipeline_map_table = (DefaultTableModel)jTablePipelineMap.getModel();
