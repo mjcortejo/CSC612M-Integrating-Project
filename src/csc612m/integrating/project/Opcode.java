@@ -157,12 +157,12 @@ public class Opcode {
             //checks instruction
             String[] parsed_line = line.split(" ");
             
-            if (!instruction_opcode_map.containsKey(parsed_line[0])) //if the first param is a label, then remove the label from array
+            if (!instruction_opcode_map.containsKey(parsed_line[0].toLowerCase())) //if the first param is a label, then remove the label from array
             {
                 parsed_line = Arrays.copyOfRange(parsed_line, 1, parsed_line.length); //restructures the array index to original without changing the code below
             }
 
-            String instruction = parsed_line[0];
+            String instruction = parsed_line[0].toLowerCase();
             ArrayList<String> pre_params = new ArrayList<String>();
 
             for (int i = 1; i < parsed_line.length; i++) //this loop makes sure that there are no more whitespaces between register params
