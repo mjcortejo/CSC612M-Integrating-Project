@@ -62,15 +62,20 @@ public class InstructionExtractor {
             String line = GetJTableValue(jTableProgram, line_number, 2);
             String[] parsed_line = ParseLine(line);
             
+            String offset;
+            String target;
+            
             switch (parsed_line[0])
             {
                     case "lw":
-                        instruction_parse_map.put(hex_address, new String[]{parsed_line[1], parsed_line[2]});
+                        offset = GetImmOfOffset(parsed_line[2]);
+                        target = GetTargetOffsetRegister(parsed_line[2]);
+                        instruction_parse_map.put(hex_address, new String[]{parsed_line[1], offset, target});
                         break;
                     case "sw":
-                        String offset = GetImmOfOffset(parsed_line[2]);
-                        String target = GetTargetOffsetRegister(parsed_line[2]);
-                        instruction_parse_map.put(hex_address, new String[]{parsed_line[1], offset, target}); //destination, offset, target
+                        offset = GetImmOfOffset(parsed_line[2]);
+                        target = GetTargetOffsetRegister(parsed_line[2]);
+                        instruction_parse_map.put(hex_address, new String[]{parsed_line[1], offset, target});
                          break;
                     case "add":
                     case "and":
@@ -216,10 +221,20 @@ public class InstructionExtractor {
     
     public String GetTargetOffsetRegister(String full_param)
     {
+        //check for word name instead
         String[] pre_offset_params = full_param.split("\\("); //this removes the ( in (x8) <-- example
-        String target_register_name = pre_offset_params[1]; //we should be able to get the offset address
-        target_register_name = target_register_name.replace(")", ""); // we will remove the closing parenthesis from x8)
-       
+        String target_register_name;
+        
+        if (pre_offset_params.length > 1)
+        {
+            target_register_name = pre_offset_params[1]; //we should be able to get the offset address
+            target_register_name = target_register_name.replace(")", ""); // we will remove the closing parenthesis from x8)
+        }
+        else
+        {
+            target_register_name = pre_offset_params[0];
+        }
+               
 //        String target_hex_value = GetRegisterHexValueFromRegisterName(target_register_name);
 //        int[] target_binary = Convert.HexaToBinary(target_hex_value);
         

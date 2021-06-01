@@ -449,7 +449,7 @@ public class Pipeline {
                     
                     //get datasegment of word value, returns row and col
                     //go to jTableAddress and find the value of row and col
-                    int[] word_value = data_segment_map.get(target_instruction[1]);
+                    int[] word_value = data_segment_map.get(target_instruction[2]);
                     execute_value = GetJTableValue(tableMemory, word_value[0], word_value[1]);
                     execution_map.put(instruction_address, execute_value);
 //                    String rs1_value_hex = GetRegisterHexValueFromRegisterName(target_instruction[0]);

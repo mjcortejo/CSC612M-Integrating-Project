@@ -272,8 +272,9 @@ public class Opcode {
                     rd_binary = Convert.DecimalToBinary(Integer.toString(rd_table_row)); 
                     rs1_table_row = GetRegisterTableRow(params[1]);
                     hexa_value = GetRegisterHexValueFromTableRow(rs1_table_row);
-                    rs1_binary = Convert.HexaToBinary(hexa_value);
-                    imm_binary = Convert.DecimalToBinary(params[2], 12);
+                    rs1_binary = Convert.HexaToBinary(hexa_value); 
+//                    imm_binary = Convert.DecimalToBinary(params[2], 12); //replace immediate value here 
+                    imm_binary = ExtractImmediateValue(params[2], 12);
                     
                     AddBinaryToOpcode(binary_opcode, instruction_opcode, 6, 0);
                     AddBinaryToOpcode(binary_opcode, rd_binary, 11, 7);
@@ -380,6 +381,21 @@ public class Opcode {
         }
         PrintBinaryOpcode(binary_opcode);
         return full_opcode;
+    }
+    
+    public static int[] ExtractImmediateValue(String imm_value, int num_bits)
+    {
+        int[] binary_value;
+        if (imm_value.contains("0x"))
+        {
+            imm_value = imm_value.replace("0x", "");   
+            binary_value = Convert.HexaToBinary(imm_value);
+        }
+        else
+        {
+            binary_value = Convert.DecimalToBinary(imm_value);
+        }
+        return binary_value;
     }
     
     /***
@@ -561,6 +577,7 @@ public class Opcode {
         }
         return offset_binary;
     }
+    
     
     public String GetTargetOffsetRegister(String full_param) throws Exception
     {
