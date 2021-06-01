@@ -116,26 +116,43 @@ public class MainFrame extends javax.swing.JFrame {
             String binary_to_hex = Convert.BinaryToHex(decimal_to_binary);
             cell.add(binary_to_hex); //this is just the label
             
-            int address_col_location = 0;
+            int address_row_location = 0;
             
-            if (i % 32 == 0) address_col_location = i / 32;
-            else address_col_location = (i + 1) / 32;
+            if (i % 32 == 0) address_row_location = i / 32;
+            else address_row_location = (i + 1) / 32;
             
-            for (int j = 4; j < 32; j+=4) //add half bytes
+            for (int j = 0; j < 28; j+=4) //add half bytes
             {
                 binary_to_hex = Convert.BinaryToHex(Convert.IntDecimalToBinary(0, 12));
                 cell.add(binary_to_hex);
                 String memory_hex = Convert.BinaryToHex(Convert.IntDecimalToBinary(i+j, 12));
                 
-                int address_row_location = 0;
+                int address_col_location = 0;
                 
-                if (j % 4 == 0) address_row_location = j / 4;
-                else address_row_location = (j+1) / 4;
-                
-                address_location_map.put(i+j, new int[]{ address_row_location, address_col_location});
+                if (j % 4 == 0) address_col_location = j / 4;
+                else address_col_location = (j+1) / 4;
+                System.out.println(i+j);
+                address_location_map.put(i+j, new int[]{ address_row_location, address_col_location + 1});
 //                data_segment_map.put(memory_hex, binary_to_hex);
             }
             this.memory_table.addRow(cell);
+        }
+        
+        for (int i = 0; i < 2048; i+=32) // to test memory cells
+        {        
+            int address_row_location = 0;
+            
+            if (i % 32 == 0) address_row_location = i / 32;
+            else address_row_location = (i + 1) / 32;
+            
+            for (int j = 0; j < 28; j+=4) //add half bytes
+            {
+                int address_col_location = 0;
+                
+                if (j % 4 == 0) address_col_location = (j / 4) + 1;
+                else address_col_location = ((j+1) / 4) + 1;
+                this.memory_table.getValueAt(address_row_location, address_col_location);
+            }
         }
         pipeline.address_location_map = address_location_map;
     }
@@ -156,10 +173,10 @@ public class MainFrame extends javax.swing.JFrame {
         jScrollPane4 = new javax.swing.JScrollPane();
         jEditorPane1 = new javax.swing.JEditorPane();
         jTabbedPane3 = new javax.swing.JTabbedPane();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        jTableMemory = new javax.swing.JTable();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTableProgram = new javax.swing.JTable();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        jTableMemory = new javax.swing.JTable();
         jTabbedPane4 = new javax.swing.JTabbedPane();
         jScrollPane6 = new javax.swing.JScrollPane();
         jTablePipelineMap = new javax.swing.JTable();
@@ -246,6 +263,29 @@ public class MainFrame extends javax.swing.JFrame {
 
         jTabbedPane2.addTab("Source Code", jScrollPane4);
 
+        jTableProgram.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Address", "Opcode", "Instruction", "Stage"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane1.setViewportView(jTableProgram);
+        if (jTableProgram.getColumnModel().getColumnCount() > 0) {
+            jTableProgram.getColumnModel().getColumn(0).setPreferredWidth(1);
+        }
+
+        jTabbedPane3.addTab("Program", jScrollPane1);
+
         jTableMemory.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -283,29 +323,6 @@ public class MainFrame extends javax.swing.JFrame {
         }
 
         jTabbedPane3.addTab("Memory", jScrollPane3);
-
-        jTableProgram.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "Address", "Opcode", "Instruction", "Stage"
-            }
-        ) {
-            boolean[] canEdit = new boolean [] {
-                false, false, false, false
-            };
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
-        jScrollPane1.setViewportView(jTableProgram);
-        if (jTableProgram.getColumnModel().getColumnCount() > 0) {
-            jTableProgram.getColumnModel().getColumn(0).setPreferredWidth(1);
-        }
-
-        jTabbedPane3.addTab("Program", jScrollPane1);
 
         jTabbedPane2.addTab("Execution", jTabbedPane3);
 
