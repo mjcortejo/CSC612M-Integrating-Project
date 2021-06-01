@@ -31,6 +31,7 @@ public class Pipeline {
     public HashMap<Integer, int[]> address_location_map;
     public HashMap<String, int[]> data_segment_map;
     public JTextPane jTextPane;
+    public OutputPane outputpane;
     
     JTable tableRegister;
     JTable tableProgram;
@@ -62,6 +63,7 @@ public class Pipeline {
     boolean branch_executed = false;
     
     String target_branch = "";
+    public int currently_visited_program_number = 0;
     
     public Pipeline(JTable jTableRegister, JTable jTableProgram, JTable jTablePipelineMap, JTable jTablePipelineRegister, JTable jTableMemory, HashMap register_alias_map_param)
     {
@@ -121,6 +123,7 @@ public class Pipeline {
         
         pipeline_map = new TreeMap<String, String>();
         execution_map = new HashMap<String, String>();
+        
     }
     
     public boolean Cycle() throws Exception
@@ -133,6 +136,7 @@ public class Pipeline {
             String current_pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
 
             int current_counter_pc = FindTableRowByCounterPC(current_pc_hex);
+            currently_visited_program_number = current_counter_pc;
 
             if (current_counter_pc < tableProgram.getRowCount() && current_counter_pc != -1)
             {
@@ -144,11 +148,6 @@ public class Pipeline {
             pipeline_map_model.addColumn("Cycle "+ (cycles - 1));
 
             pipeline_map_it = pipeline_map.entrySet().iterator();
-            
-            if ((cycles - 1) == 3)
-            {
-                System.out.println("stop");
-            }
 
             while (pipeline_map_it.hasNext())
             {
@@ -194,6 +193,7 @@ public class Pipeline {
         catch(Exception ex)
         {
             Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+            outputpane.Print("Error at line "+(currently_visited_program_number));
             cycling = false;
         }
         
@@ -530,7 +530,7 @@ public class Pipeline {
                     imm = Convert.HexToDecimal(imm_hex_opcode);
                     
                     param1_hex = GetRegisterHexValueFromRegisterName(target_instruction[1]);
-                    param2_hex = GetRegisterHexValueFromRegisterName(target_instruction[2]);
+                    param2_hex = Convert.DecimalToHex(target_instruction[2], 32);
                     
                     param1 = Integer.parseInt(param1_hex);
                     param2 = Integer.parseInt(param2_hex);
@@ -616,7 +616,7 @@ public class Pipeline {
         }
     }
     
-    public void Memory(int instruction_pc)
+    public void Memory(int instruction_pc) throws Exception
     {
         String instruction_address = GetJTableValue(tableProgram, instruction_pc, 0);
 
@@ -638,6 +638,21 @@ public class Pipeline {
                 pipeline_internal_register_model.setValueAt(current_pc_hex, ir_row_index, 1);
                 break;
             case "sw":
+                String[] target_instruction = instruction_parse_map.get(instruction_address);
+
+                String target_memory_address = execution_map.get(instruction_address);
+                String value = GetRegisterHexValueFromRegisterName(target_instruction[0]);
+                int[] memory_table_loc = address_location_map.get(target_memory_address);
+                try
+                {
+                    memory_segment_model.setValueAt(value, memory_table_loc[0], memory_table_loc[1]);
+                }
+                catch(Exception ex)
+                {
+                    outputpane.Print("Invalid memory address " + target_memory_address);
+//                    throw new Exception("Invalid memory address " + target_memory_address);
+                    break;
+                }
             case "add":
             case "and":
             case "or":
@@ -697,19 +712,8 @@ public class Pipeline {
         
         String[] branch_list = {"beq","bne","blt","bge"};
         boolean is_branch_instruction = Arrays.stream(branch_list).anyMatch(current_instruction::equals);
-        
-        if (current_instruction == "sw")
-        {
-            String target_memory_address = execution_map.get(instruction_address);
-            String value = GetRegisterHexValueFromRegisterName(target_instruction[0]);
-            int[] memory_table_loc = address_location_map.get(target_memory_address);
-            memory_segment_model.setValueAt(value, memory_table_loc[0], memory_table_loc[1]);
-        }
-        else if (is_branch_instruction)
-        {
-            //do nothing basically
-        }
-        else
+
+        if (!is_branch_instruction && current_instruction != "sw")
         {
             int register_destination_int = GetRegisterTableRow(target_instruction[0]);
             //write to register table
