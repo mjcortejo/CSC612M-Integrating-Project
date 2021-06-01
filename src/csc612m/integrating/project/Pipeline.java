@@ -145,7 +145,7 @@ public class Pipeline {
             }
 
             cycles++;
-            pipeline_map_model.addColumn("Cycle "+ (cycles - 1));
+            pipeline_map_model.addColumn(cycles - 1);
 
             pipeline_map_it = pipeline_map.entrySet().iterator();
 
@@ -363,18 +363,6 @@ public class Pipeline {
                 if (branch_executed)
                 {
                     target_branch = target_instruction[2];
-//                    System.out.println("Branch Instruction Detected");
-//                    
-//                    ir_row_index = pipeline_internal_register_map.get("PC");
-////                    String current_pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
-////                    pipeline_map.remove(current_pc_hex);//stops the next pipeline from running
-////                    int current_counter_pc = FindTableRowByCounterPC(instruction_address);
-////                    pipeline_map_model.setValueAt("DEL", current_counter_pc, cycles);
-//                    
-//                    pipeline_internal_register_model.setValueAt(target_instruction[2], ir_row_index, 1);
-//
-//                    ir_row_index = pipeline_internal_register_map.get("IF/ID.NPC");
-//                    pipeline_internal_register_model.setValueAt(target_instruction[2], ir_row_index, 1);
                 }
                 break;
             default:
@@ -477,8 +465,9 @@ public class Pipeline {
                     
                     param1_hex = GetRegisterHexValueFromRegisterName(target_instruction[1]);
                     param2_hex = GetRegisterHexValueFromRegisterName(target_instruction[2]);
-                    param1 = Integer.parseInt(param1_hex);
-                    param2 = Integer.parseInt(param2_hex);
+                    
+                    param1 = Convert.HexToDecimal(param1_hex);
+                    param2 = Convert.HexToDecimal(param2_hex);
                     
                     switch(current_instruction)
                     {
@@ -530,10 +519,11 @@ public class Pipeline {
                     imm = Convert.HexToDecimal(imm_hex_opcode);
                     
                     param1_hex = GetRegisterHexValueFromRegisterName(target_instruction[1]);
-                    param2_hex = Convert.DecimalToHex(target_instruction[2], 32);
+//                    param2_hex = Convert.DecimalToHex(target_instruction[2], 32);
+                    param2_hex = ExtractImmediateValue(target_instruction[2]);
                     
-                    param1 = Integer.parseInt(param1_hex);
-                    param2 = Integer.parseInt(param2_hex);
+                    param1 = Convert.HexToDecimal(param1_hex);
+                    param2 = Convert.HexToDecimal(param2_hex);
                     
                     switch(current_instruction)
                     {
@@ -730,6 +720,16 @@ public class Pipeline {
         }
     }
     
+    public static String ExtractImmediateValue(String imm_value)
+    {
+        String string_value = null;
+        if (imm_value.contains("0x"))
+        {
+            string_value = imm_value.replace("0x", "");
+        }
+        return string_value;
+    }
+    
     
     public String GetRegisterHexValueFromRegisterName(String register)
     {
@@ -748,7 +748,7 @@ public class Pipeline {
         int table_row = 0;
         if (register.charAt(0) == 'x') //this will check if the name called starts with xN or its original register name (etc. t0, a1)
         {
-            String rownum_string = Character.toString(register.charAt(1));
+            String rownum_string = register.replace("x", "");
             table_row = Integer.parseInt(rownum_string);
         }
         else
