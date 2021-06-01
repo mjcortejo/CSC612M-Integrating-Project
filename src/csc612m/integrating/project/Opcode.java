@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JTable;
@@ -99,6 +101,7 @@ public class Opcode {
            put("xor", new int[] {0,0,0,0,0,0,0});
            put("slt", new int[] {0,0,0,0,0,0,0});
            put("srl", new int[] {0,0,0,0,0,0,0});
+           put("sll", new int[] {0,0,0,0,0,0,0});
            put("slli", new int[] {0,0,0,0,0,0,0});
            put("srli", new int[] {0,0,0,0,0,0,0});
         }};
@@ -293,7 +296,8 @@ public class Opcode {
                     hexa_value = GetRegisterHexValueFromTableRow(rs1_table_row);
                     rs1_binary = Convert.HexaToBinary(hexa_value);
                     
-                    int[] shamt_binary = Convert.DecimalToBinary(params[2]);
+//                    int[] shamt_binary = Convert.DecimalToBinary(params[2]);
+                    int[] shamt_binary = ExtractImmediateValue(params[2], 5);
                     
                     AddBinaryToOpcode(binary_opcode, instruction_opcode, 6, 0);
                     AddBinaryToOpcode(binary_opcode, rd_binary, 11, 7);
@@ -375,9 +379,9 @@ public class Opcode {
                     }
             }
         }
-        catch(Exception e)
+        catch(Exception ex)
         {
-            System.out.println(e);
+            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
         PrintBinaryOpcode(binary_opcode);
         return full_opcode;
@@ -389,11 +393,11 @@ public class Opcode {
         if (imm_value.contains("0x"))
         {
             imm_value = imm_value.replace("0x", "");   
-            binary_value = Convert.HexaToBinary(imm_value);
+            binary_value = Convert.HexaToBinary(imm_value, num_bits);
         }
         else
         {
-            binary_value = Convert.DecimalToBinary(imm_value);
+            binary_value = Convert.DecimalToBinary(imm_value, num_bits);
         }
         return binary_value;
     }
