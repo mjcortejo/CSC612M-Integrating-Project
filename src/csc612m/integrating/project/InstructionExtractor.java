@@ -180,7 +180,7 @@ public class InstructionExtractor {
     {
         String[] parsed_line = line.split(" ");
         ArrayList<String> inst_params = new ArrayList<String>();
-        if (!instruction_list.contains(parsed_line[0])) //if the first param is a label, then remove the label from array
+        if (!instruction_list.contains(parsed_line[0].toLowerCase())) //if the first param is a label, then remove the label from array
         {
             parsed_line = Arrays.copyOfRange(parsed_line, 1, parsed_line.length); //restructures the array index to original without changing the code below
         }
@@ -228,6 +228,10 @@ public class InstructionExtractor {
         {
             offset = offset.replace("0x", "");
             offset = String.valueOf(Convert.HexToDecimal(offset));
+        }
+        else if (offset.isEmpty())
+        {
+            offset = "0"; 
         }
         return offset;
     }
