@@ -461,96 +461,106 @@ public class MainFrame extends javax.swing.JFrame {
          */
     private void jBtnAssembleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnAssembleActionPerformed
         // TODO add your handling code here:
-        lines = jEditorPane1.getText().split("\n");
         
-        this.memory_table = (DefaultTableModel)jTableMemory.getModel();
-        
-        int current_parse_line = 0;
-        int sourcecode_section_state = 0;
-        
-        if (sourcecode_section_state == 0)//initial state
+        try
         {
-            for (int i = 0; i < lines.length; i++)
-            {
-                String current = lines[i];
-                if(current.contains(".data"))
-                {
-                    sourcecode_section_state = 1;
-                    current_parse_line = i;
-                    break;
-                }
-                else if (current.contains(".text"))
-                {
-                    sourcecode_section_state = 2;
-                    current_parse_line = i;
-                }
-            }
-        }
+            lines = jEditorPane1.getText().split("\n");
         
-        int current_memory_row = 0;
-        int current_memory_col = 1;
-        
-        String pattern = "(\\w+:) (.\\w+) (0x[a-z0-9]+|\\d+)";
-        Pattern variable_pattern = Pattern.compile(pattern);
-        
-        if (sourcecode_section_state == 1) //currently in .data section
-        {
-            for (int i = current_parse_line; i < lines.length; i++)
-            {
-                String current = lines[i];
-                if(current.contains(".text"))
-                {
-                    sourcecode_section_state = 2;
-                    current_parse_line = i;
-                    break;
-                }
-                
-                Matcher m = variable_pattern.matcher(current);
-                
-                if(m.find())
-                {
-                    try
-                    {
-                        String var_name = m.group(1);
-                        String data_type = m.group(2);
-                        String value = m.group(3);
-                        int value_int = ExtractImmediateValueToDecimal(value);
+            this.memory_table = (DefaultTableModel)jTableMemory.getModel();
 
-                        if (current_memory_col > 7)
-                        {
-                            current_memory_row++;
-                            current_memory_col = 1;
-                        }
-                        data_segment_map.put(var_name.replace(":", ""), new int[]{current_memory_row, current_memory_col, value_int});
-                        current_memory_col++;
-                    }
-                    catch(Exception ex)
+            int current_parse_line = 0;
+            int sourcecode_section_state = 0;
+
+            if (sourcecode_section_state == 0)//initial state
+            {
+                for (int i = 0; i < lines.length; i++)
+                {
+                    String current = lines[i];
+                    if(current.contains(".data"))
                     {
-                        outputpane.Print("Invalid line at "+(current_parse_line + 1) + " with instruction "+lines[i]);
+                        sourcecode_section_state = 1;
+                        current_parse_line = i;
+                        break;
+                    }
+                    else if (current.contains(".text"))
+                    {
+                        sourcecode_section_state = 2;
+                        current_parse_line = i;
                     }
                 }
-                current_parse_line = i;
-  
             }
-            
-            for (Map.Entry<String, int[]> pair: data_segment_map.entrySet())
+
+            int current_memory_row = 0;
+            int current_memory_col = 1;
+
+            String pattern = "(\\w+:) (.\\w+) (0x[a-z0-9]+|\\d+)";
+            Pattern variable_pattern = Pattern.compile(pattern);
+
+            if (sourcecode_section_state == 1) //currently in .data section
             {
-                int row = pair.getValue()[0];
-                int column = pair.getValue()[1];
-                int value = pair.getValue()[2];
-                int[] data_value_binary = Convert.IntDecimalToBinary(value, 32);
-                String data_value_hex = Convert.BinaryToHex(data_value_binary);
-                memory_table.setValueAt(data_value_hex, row, column);
+                for (int i = current_parse_line; i < lines.length; i++)
+                {
+                    String current = lines[i];
+                    if(current.contains(".text"))
+                    {
+                        sourcecode_section_state = 2;
+                        current_parse_line = i;
+                        break;
+                    }
+
+                    Matcher m = variable_pattern.matcher(current);
+
+                    if(m.find())
+                    {
+                        try
+                        {
+                            String var_name = m.group(1);
+                            String data_type = m.group(2);
+                            String value = m.group(3);
+                            int value_int = ExtractImmediateValueToDecimal(value);
+
+                            if (current_memory_col > 7)
+                            {
+                                current_memory_row++;
+                                current_memory_col = 1;
+                            }
+                            data_segment_map.put(var_name.replace(":", ""), new int[]{current_memory_row, current_memory_col, value_int});
+                            current_memory_col++;
+                        }
+                        catch(Exception ex)
+                        {
+                            outputpane.Print("Invalid line at "+(current_parse_line + 1) + " with instruction "+lines[i]);
+                        }
+                    }
+                    current_parse_line = i;
+
+                }
+
+                for (Map.Entry<String, int[]> pair: data_segment_map.entrySet())
+                {
+                    int row = pair.getValue()[0];
+                    int column = pair.getValue()[1];
+                    int value = pair.getValue()[2];
+                    int[] data_value_binary = Convert.IntDecimalToBinary(value, 32);
+                    String data_value_hex = Convert.BinaryToHex(data_value_binary);
+                    memory_table.setValueAt(data_value_hex, row, column);
+                }
+                sourcecode_section_state = 2;
             }
-            sourcecode_section_state = 2;
+
+            if (sourcecode_section_state == 2)//final state
+            {
+                pipeline.data_segment_map = data_segment_map;
+                PopulateProgramTextSegmentAddress(current_parse_line);
+            }
+            outputpane.Print("Finish Compiling");
+        }
+        catch(Exception ex)
+        {
+            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+            outputpane.Print(ex.getMessage()); 
         }
         
-        if (sourcecode_section_state == 2)//final state
-        {
-            pipeline.data_segment_map = data_segment_map;
-            PopulateProgramTextSegmentAddress(current_parse_line);
-        }
-        outputpane.Print("Finish Compiling");
         
     }//GEN-LAST:event_jBtnAssembleActionPerformed
 
