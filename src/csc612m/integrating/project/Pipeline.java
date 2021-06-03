@@ -118,7 +118,7 @@ public class Pipeline {
             put("ID/EX.NPC", 7);
             put("EX/MEM.ALUOutput", 8);
             put("EX/MEM.IR", 9);
-            put("EX/MEM.N", 10);
+            put("EX/MEM.B", 10);
             put("EX/MEM.COND", 11);
             put("MEM/WB.LMD", 12);
             put("MEM/WB.IR", 13);
@@ -537,6 +537,9 @@ public class Pipeline {
         ir_row_index = pipeline_internal_register_map.get("ID/EX.B");
         String id_ex_b_opcode = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
         
+        ir_row_index = pipeline_internal_register_map.get("EX/MEM.B");
+        pipeline_internal_register_model.setValueAt(id_ex_b_opcode, ir_row_index, 1);
+        
         int a;
         int b;
         int imm;
@@ -857,7 +860,6 @@ public class Pipeline {
             //write to register table
             register_model.setValueAt(execution_map.get(instruction_address), register_destination_int, 2);
         }
-
         
         int current_counter_pc = FindTableRowByCounterPC(instruction_address);
         
