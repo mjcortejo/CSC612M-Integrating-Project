@@ -122,6 +122,13 @@ public class Convert {
      */
     public static int[] IntDecimalToBinary(int decimal, int num_bits)
     {
+        //temp
+        
+        if (decimal < 0)
+        {
+            decimal = 0 - decimal;
+        }
+        
         if(num_bits == 0)
         {
             num_bits = 5;
