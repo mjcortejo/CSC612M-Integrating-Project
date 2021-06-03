@@ -62,6 +62,10 @@ public class Convert {
             int i = 1;
             int dec_num = HexToDecimal(hexa);
 
+            if ( dec_num < 0)
+            {
+                dec_num =  0 - dec_num;
+            }
             /* convert decimal to binary */        
             while(dec_num != 0)
             {
@@ -92,6 +96,11 @@ public class Convert {
      */
     public static int[] DecimalToBinary(String decimal, int num_bits)
     {
+        
+//        if (Integer.parseInt(decimal) < 0)
+//        {
+//            decimal = String.valueOf(0 - Integer.parseInt(decimal));
+//        }
         if(num_bits == 0)
         {
             num_bits = 5;
@@ -101,13 +110,27 @@ public class Convert {
 
         if (!decimal.isEmpty())
         {
-            int i = 0;
-            int quot = Integer.parseInt(decimal);
-            while(quot != 0)
+            if (Integer.parseInt(decimal) >= 0)
             {
-                binary_val[i++] = quot%2;
-                quot = quot/2;
+                int i = 0;
+                int quot = Integer.parseInt(decimal);
+                while(quot != 0)
+                {
+                    binary_val[i++] = quot%2;
+                    quot = quot/2;
+                }
             }
+            else
+            {
+                int dec = Integer.parseInt(decimal);
+                String result = Integer.toBinaryString(dec);
+                for (int i = result.length() - 1, j = 0; j < num_bits; i--, j++)
+                {
+                    System.out.println(result.charAt(i));
+                    binary_val[j++] = Integer.parseInt(String.valueOf(result.charAt(i)));
+                }
+            }
+            
             //zero pad after
         }
         
@@ -136,7 +159,7 @@ public class Convert {
         
         int[] binary_val = new int[num_bits];
 
-        if (decimal != 0)
+        if (decimal >= 0)
         {
             int i = 0;
             int quot = decimal;
@@ -147,6 +170,15 @@ public class Convert {
             }
             //zero pad after
         }
+            else
+            {
+                String result = Integer.toBinaryString(decimal);
+                for (int i = result.length() - 1, j = 0; j < num_bits; i--, j++)
+                {
+                    System.out.println(result.charAt(i));
+                    binary_val[j++] = Integer.parseInt(String.valueOf(result.charAt(i)));
+                }
+            }
         
         return binary_val;
     }
