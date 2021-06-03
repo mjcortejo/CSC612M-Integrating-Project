@@ -29,6 +29,7 @@ public class InstructionExtractor {
         add("lw");
         add("sw");
         add("add");
+        add("sub");
         add("addi");
         add("slt");
         add("slti");
@@ -85,6 +86,7 @@ public class InstructionExtractor {
                             instruction_parse_map.put(hex_address, new String[]{parsed_line[1], offset, target});
                              break;
                         case "add":
+                        case "sub":
                         case "and":
                         case "or":
                         case "xor":

@@ -33,6 +33,9 @@ public class Opcode {
     JTable jTableMemory;
     HashMap<String, int[]> data_segment_map;
     
+    
+    public OutputPane outputpane;
+    
     /***
      * Constructor mandatory accepts jTableRegister and a jTableProgram parameter
      * @param jTableRegister_param
@@ -50,6 +53,7 @@ public class Opcode {
             put("lw",  new int[] {0,0,0,0,0,1,1});
             put("sw",  new int[] {0,1,0,0,0,1,1});
             put("add", new int[] {0,1,1,0,0,1,1});
+            put("sub", new int[] {0,1,1,0,0,1,1});
             put("addi",new int[] {0,0,1,0,0,1,1});
             put("slt", new int[] {0,1,1,0,0,1,1});
             put("slti",new int[] {0,0,1,0,0,1,1});
@@ -73,6 +77,7 @@ public class Opcode {
             put("lw",  new int[] {0,1,0});
             put("sw",  new int[] {0,1,0});
             put("add", new int[] {0,0,0});
+            put("sub", new int[] {0,0,0});
             put("addi",new int[] {0,0,0});
             put("slt", new int[] {0,1,0});
             put("slti",new int[] {0,1,0});
@@ -96,6 +101,7 @@ public class Opcode {
         //slli, srli
         funct7_opcode_map = new HashMap<String, int[]>(){{
            put("add", new int[] {0,0,0,0,0,0,0});
+           put("sub", new int[] {0,1,0,0,0,0,0});
            put("and", new int[] {0,0,0,0,0,0,0});
            put("or", new int[] {0,1,0,0,0,0,0});
            put("xor", new int[] {0,0,0,0,0,0,0});
@@ -241,6 +247,7 @@ public class Opcode {
                     break;
 //              add, and, or, xor, slt, sll, and srl are grouped because they share similar opcode construction
                 case "add":
+                case "sub":
                 case "and":
                 case "or":
                 case "xor":
@@ -276,7 +283,6 @@ public class Opcode {
                     rs1_table_row = GetRegisterTableRow(params[1]);
                     hexa_value = GetRegisterHexValueFromTableRow(rs1_table_row);
                     rs1_binary = Convert.HexaToBinary(hexa_value); 
-//                    imm_binary = Convert.DecimalToBinary(params[2], 12); //replace immediate value here 
                     imm_binary = ExtractImmediateValue(params[2], 12);
                     
                     AddBinaryToOpcode(binary_opcode, instruction_opcode, 6, 0);
@@ -313,6 +319,7 @@ public class Opcode {
                 case "bne":
                 case "blt":
                 case "bge":
+
                     funct7_opcode = new int[7]; //ignore funct7 mapping for branches
                     
                     rs1_table_row = GetRegisterTableRow(params[1]);
@@ -380,13 +387,14 @@ public class Opcode {
                     }
                     else //assumes invalid instruction
                     {
-                        throw new Exception("Invalid Instruction "+instruction);
+                        throw new Exception("Invalid Instruction "+line);
                     }
             }
         }
         catch(Exception ex)
         {
             Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+            outputpane.Print(ex.getMessage());
         }
         PrintBinaryOpcode(binary_opcode);
         return full_opcode;

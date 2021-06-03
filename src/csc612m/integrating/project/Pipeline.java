@@ -76,6 +76,7 @@ public class Pipeline {
             add("lw");
             add("sw");
             add("add");
+            add("sub");
             add("addi");
             add("slt");
             add("slti");
@@ -590,6 +591,7 @@ public class Pipeline {
                     execution_map.put(instruction_address, effective_memory_hex); //effective_memory_hex, which means, rs1 will be assigned to the memory adddres
                     break;
                 case "add":
+                case "sub":
                 case "and":
                 case "or":
                 case "xor":
@@ -610,6 +612,10 @@ public class Pipeline {
                             case "add":
                                 ALUOutput_Decimal = a + b;
                                 execute_value = String.valueOf(param1 + param2);
+                                break;
+                            case "sub":
+                                ALUOutput_Decimal = a + b;
+                                execute_value = String.valueOf(param1 - param2);
                                 break;
                             case "and":
                                 ALUOutput_Decimal = a & b;
@@ -795,6 +801,7 @@ public class Pipeline {
                     break;
                 }
             case "add":
+            case "sub":
             case "and":
             case "or":
             case "xor":
