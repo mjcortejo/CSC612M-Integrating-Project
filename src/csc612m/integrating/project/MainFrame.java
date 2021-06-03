@@ -461,7 +461,6 @@ public class MainFrame extends javax.swing.JFrame {
          */
     private void jBtnAssembleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnAssembleActionPerformed
         // TODO add your handling code here:
-        
         try
         {
             lines = jEditorPane1.getText().split("\n");
@@ -586,6 +585,7 @@ public class MainFrame extends javax.swing.JFrame {
     public void PopulateProgramTextSegmentAddress(int current_parse_line)
     {
         opcode = new Opcode(jTableRegister, jTableProgram, jTableMemory, data_segment_map);
+        opcode.outputpane = outputpane;
         instruction_extractor = new InstructionExtractor(jTableProgram, data_segment_map);
         instruction_extractor.outputpane = outputpane;
         lines = jEditorPane1.getText().split("\n");
@@ -661,7 +661,7 @@ public class MainFrame extends javax.swing.JFrame {
                 }
             } catch (Exception ex) {
                 Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
-                outputpane.Print("Error at line "+(pipeline.currently_visited_program_number));
+                outputpane.Print("Error at line "+(pipeline.currently_visited_program_number) + ex.getMessage());
                 break;
             }
         }
