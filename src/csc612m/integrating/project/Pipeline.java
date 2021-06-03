@@ -64,6 +64,11 @@ public class Pipeline {
     
     String target_branch = "";
     public int currently_visited_program_number = 0;
+    boolean is_delayed = false;
+//    List<String> currently_accessed_registers = new ArrayList<String>();
+    HashMap<String, String> currently_accessed_registers = new HashMap<String, String>();
+//    List<String> executed_registers = new ArrayList<String>();
+    HashMap<String, String> executed_registers = new HashMap<String, String>();
     
     public Pipeline(JTable jTableRegister, JTable jTableProgram, JTable jTablePipelineMap, JTable jTablePipelineRegister, JTable jTableMemory, HashMap register_alias_map_param)
     {
@@ -148,14 +153,25 @@ public class Pipeline {
             pipeline_map_model.addColumn(cycles - 1);
 
             pipeline_map_it = pipeline_map.entrySet().iterator();
+            
+            for (Map.Entry er : executed_registers.entrySet())
+            {
+                currently_accessed_registers.remove(er.getKey());
+            }
+            executed_registers = new HashMap<String, String>();
 
             while (pipeline_map_it.hasNext())
             {
                 //get state of each pc counter
+
                 Map.Entry<String, String> instruction = pipeline_map_it.next();
-                System.out.println(instruction.getKey()
-                );
+                System.out.println(instruction.getKey());
                 int instruction_pc = FindTableRowByCounterPC(instruction.getKey());
+                
+                String instruction_address = GetJTableValue(tableProgram, instruction_pc, 0);
+        
+                String instruction_line = GetJTableValue(tableProgram, instruction_pc, 2);  //this is to check if its a branch instruction
+                String current_instruction = ExtractInstruction(instruction_line);
 
                 String instruction_state = GetJTableValue(tableProgram, instruction_pc, 3);
 
@@ -175,16 +191,21 @@ public class Pipeline {
                 {
                     Execute(instruction_pc);
                 }
-                else if (instruction_state.equals("IF"))
+                else if (instruction_state.equals("IF") || instruction_state.equals("*"))
                 {
-                    InstructionDecode(instruction_pc);
+                    CheckForDelay(instruction_pc);
+                    if (!is_delayed)
+                    {
+                        InstructionDecode(instruction_pc);
+                    }
                 }
                 else if (instruction_state.equals(""))//assumes has no state yet
                 {
-                    InstructionFetch(instruction_pc);
+                     InstructionFetch(instruction_pc);
                 }
             }
-            
+                          
+               
             if (pipeline_map.isEmpty())
             {
                 cycling = false;
@@ -225,11 +246,115 @@ public class Pipeline {
         return value;
     }
     
+    public void CheckForDelay(int instruction_pc)
+    {
+        String instruction_address = GetJTableValue(tableProgram, instruction_pc, 0);
+        
+        String instruction_line = GetJTableValue(tableProgram, instruction_pc, 2);  //this is to check if its a branch instruction
+        String current_instruction = ExtractInstruction(instruction_line);
+        
+        String[] target_instruction = instruction_parse_map.get(instruction_address);
+        
+        String[] branch_list = {"beq","bne","blt","bge"};
+        
+        int ir_row_index = pipeline_internal_register_map.get("PC");
+        String current_pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
+        
+        int current_counter_pc = FindTableRowByCounterPC(instruction_address);
+        
+        HashMap<String, String> non_local_accessed_registers = new HashMap<String, String>();
+        
+        boolean is_branch_instruction = Arrays.stream(branch_list).anyMatch(current_instruction::equals);
+
+        if (is_branch_instruction)
+        {
+            for (Map.Entry er : currently_accessed_registers.entrySet())
+            {
+                for (int i = 0 ; i <= 1; i++)
+                {
+                    if (currently_accessed_registers.get(target_instruction[i]) != null)
+                    {
+                        if (!currently_accessed_registers.get(target_instruction[i]).equals(instruction_address))
+                        {
+                            non_local_accessed_registers.put(er.getKey().toString(), er.getValue().toString());
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            for (Map.Entry er : currently_accessed_registers.entrySet())
+            {
+                for (int i = 1 ; i <= 2; i++)
+                {
+                    if (currently_accessed_registers.get(target_instruction[i]) != null)
+                    {
+                        if (!currently_accessed_registers.get(target_instruction[i]).equals(instruction_address))
+                        {
+                            non_local_accessed_registers.put(er.getKey().toString(), er.getValue().toString());
+                        }
+                    }
+                }
+            }
+        }
+    
+        if (!current_instruction.equals("sw"))
+        {
+            if (is_branch_instruction)
+            {
+                if (non_local_accessed_registers.get(target_instruction[0]) != null || non_local_accessed_registers.get(target_instruction[1]) != null )
+                {
+                    boolean reg1_exists = non_local_accessed_registers.get(target_instruction[0]) != null;
+                    boolean reg2_exists = non_local_accessed_registers.get(target_instruction[1]) != null;
+
+                    if (reg1_exists || reg2_exists)
+                    {
+                        program_model.setValueAt("*", current_counter_pc, 3);
+                        pipeline_map_model.setValueAt("*", current_counter_pc, cycles); 
+                        is_delayed = true;
+                    }
+                }
+                else
+                {
+                    is_delayed = false;
+                }
+            }
+            else
+            {
+                if (currently_accessed_registers.get(target_instruction[1]) != null || currently_accessed_registers.get(target_instruction[2]) != null )
+                {
+                    boolean reg1_exists = non_local_accessed_registers.get(target_instruction[1]) != null;
+                    boolean reg2_exists = non_local_accessed_registers.get(target_instruction[2]) != null;
+
+                    if (reg1_exists || reg2_exists)
+                    {
+                        program_model.setValueAt("*", current_counter_pc, 3);
+                        pipeline_map_model.setValueAt("*", current_counter_pc, cycles); 
+                        is_delayed = true;
+                    }
+                }
+                else
+                {
+                    is_delayed = false;
+                }
+            }
+        }
+        else
+        {
+            is_delayed = false;
+        }
+        
+    }
+    
     //IF
     public void InstructionFetch(int instruction_pc){
 //        String current_pc_hex = GetJTableValue(tableRegister, 32, 2);
 
         String instruction_address = GetJTableValue(tableProgram, instruction_pc, 0);  
+        
+        String instruction_line = GetJTableValue(tableProgram, instruction_pc, 2);  //this is to check if its a branch instruction
+
         
         int ir_row_index = pipeline_internal_register_map.get("PC");
         String current_pc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
@@ -237,9 +362,18 @@ public class Pipeline {
         
         int current_pc_program_row = FindTableRowByCounterPC(current_pc_hex);
         
-        int current_pc_int = Convert.HexToDecimal(current_pc_hex); 
+        int current_pc_int = Convert.HexToDecimal(current_pc_hex);
         
-        if (current_pc_program_row < tableProgram.getRowCount() && current_pc_program_row != -1)
+        
+        String[] branch_list = {"beq","bne","blt","bge"};
+        
+        String current_instruction = ExtractInstruction(instruction_line);
+
+        
+        String[] target_instruction = instruction_parse_map.get(instruction_address);
+        boolean is_branch_instruction = Arrays.stream(branch_list).anyMatch(current_instruction::equals);
+
+        if (!is_delayed)
         {
             String if_id_ir_opcode = GetJTableValue(tableProgram, current_pc_program_row, 1);
             ir_row_index = pipeline_internal_register_map.get("IF/ID.IR");
@@ -263,24 +397,26 @@ public class Pipeline {
 
             pipeline_map_model.setValueAt("IF", current_counter_pc, cycles);
 
+
+            String rs1_value_hex = GetRegisterHexValueFromRegisterName(target_instruction[0]);
+            int rs1_value_dec = Convert.HexToDecimal(rs1_value_hex);
+
+            currently_accessed_registers.put(target_instruction[0], instruction_address);
+
             if (branch_executed)
             {
                 System.out.println("Branch Instruction Detected");
-//                    
+        //                    
                 ir_row_index = pipeline_internal_register_map.get("PC");
 
                 pipeline_internal_register_model.setValueAt(target_branch, ir_row_index, 1);
 
                 ir_row_index = pipeline_internal_register_map.get("IF/ID.NPC");
                 pipeline_internal_register_model.setValueAt(target_branch, ir_row_index, 1);
-                
+
                 pipeline_map_it.remove();
                 branch_executed = false;
             }
-        }
-        else
-        {
-            System.out.println("wot");
         }
     }
     
@@ -294,12 +430,18 @@ public class Pipeline {
         String instruction_line = GetJTableValue(tableProgram, instruction_pc, 2);  //this is to check if its a branch instruction
         String current_instruction = ExtractInstruction(instruction_line);
         
+        String[] target_instruction = instruction_parse_map.get(instruction_address);
+        
+        String[] branch_list = {"beq","bne","blt","bge"};
+        
+        int current_counter_pc = FindTableRowByCounterPC(instruction_address);
+
         int ir_row_index = pipeline_internal_register_map.get("IF/ID.IR");
         String p_ir_model_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
         int[] id_ir_full_binary = Convert.HexaToBinary(p_ir_model_hex, 32);
-        
+
         int p_ir_model_int = Convert.HexToDecimal(p_ir_model_hex);
-        
+
         ir_row_index = pipeline_internal_register_map.get("IF/ID.NPC");
         String next_pc = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
 
@@ -317,33 +459,25 @@ public class Pipeline {
         String id_ex_b_hex = Convert.BinaryToHex(id_ex_a_binary);
         int id_ex_b_dec = Convert.HexToDecimal(id_ex_b_hex);
         pipeline_internal_register_model.setValueAt(id_ex_b_hex, ir_row_index, 1);
-        
+
         ir_row_index = pipeline_internal_register_map.get("ID/EX.IMM");
         int[] id_ex_imm_binary = GetBinaryFromOpcode(id_ir_full_binary, 31, 25);
         String id_ex_imm_hex = Convert.BinaryToHex(id_ex_imm_binary);
         pipeline_internal_register_model.setValueAt(id_ex_imm_hex, ir_row_index, 1);
-        
-//        ir_row_index = pipeline_internal_register_map.get("PC");
-//        String current_npc_hex = GetJTableValue(tablePipelineInternalRegister, ir_row_index, 1);
-//        int current_counter = FindTableRowByCounterPC(current_npc_hex);
-//        
-//        String current_state = GetJTableValue(tableProgram, current_counter, 3);
 
-//        branch_executed = false;
         switch (current_instruction.toLowerCase())
         {
             case "beq":
             case "bne":
             case "blt":
             case "bge":
-                String[] target_instruction = instruction_parse_map.get(instruction_address);
-        
+
                 String rs1_value_hex = GetRegisterHexValueFromRegisterName(target_instruction[0]);
                 int rs1_value_dec = Convert.HexToDecimal(rs1_value_hex);
 
                 String rs2_value_hex = GetRegisterHexValueFromRegisterName(target_instruction[1]);
                 int rs2_value_dec = Convert.HexToDecimal(rs2_value_hex);
-                
+
                 switch(current_instruction.toLowerCase())
                 {
                     case "beq":
@@ -359,7 +493,7 @@ public class Pipeline {
                         if (rs1_value_dec > rs2_value_dec) branch_executed = true;
                         break;
                 }
-                
+
                 if (branch_executed)
                 {
                     target_branch = target_instruction[2];
@@ -369,9 +503,6 @@ public class Pipeline {
                 break;
         }
 
-        
-        int current_counter_pc = FindTableRowByCounterPC(instruction_address);
-        
         if(current_counter_pc != -1)
         {
             program_model.setValueAt("ID", current_counter_pc, 3);
@@ -584,10 +715,10 @@ public class Pipeline {
                             ALUOutput_Decimal = (a != b) ? 1 : 0;
                             break;
                         case "blt":
-                            ALUOutput_Decimal = (a <= b) ? 1 : 0;
+                            ALUOutput_Decimal = (a < b) ? 1 : 0;
                             break;
                         case "bge":
-                            ALUOutput_Decimal = (a >= b) ? 1 : 0;
+                            ALUOutput_Decimal = (a > b) ? 1 : 0;
                             break;
                     }
                     ALUOutput_String = Convert.IntDecimalToHex(ALUOutput_Decimal, 32);
@@ -601,6 +732,13 @@ public class Pipeline {
         
         if(current_counter_pc != -1)
         { 
+            String[] branch_list = {"beq","bne","blt","bge"};
+            boolean is_branch_instruction = Arrays.stream(branch_list).anyMatch(current_instruction::equals);
+
+            if (!is_branch_instruction)
+            {
+                executed_registers.put(target_instruction[0], instruction_address);
+            }
             program_model.setValueAt("EX", current_counter_pc, 3);
             pipeline_map_model.setValueAt("EX", current_counter_pc, cycles);
         }
@@ -721,10 +859,10 @@ public class Pipeline {
     
     public static String ExtractImmediateValue(String imm_value)
     {
-        String string_value = null;
-        if (imm_value.contains("0x"))
+        String string_value = imm_value;
+        if (string_value.contains("0x"))
         {
-            string_value = imm_value.replace("0x", "");
+            string_value = string_value.replace("0x", "");
         }
         return string_value;
     }

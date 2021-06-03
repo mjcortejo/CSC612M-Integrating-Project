@@ -324,7 +324,12 @@ public class Opcode {
                     
                     //convert hexadecimals to decimal for easier computation
                     int current_line_integer = Convert.HexToDecimal(current_line_hexadecimal);
-                    int branch_integer = Convert.HexToDecimal(branch_hexadecimal);
+                    int branch_integer = current_line_integer;
+                    
+                    if (!branch_hexadecimal.isEmpty())
+                    {
+                        branch_integer = Convert.HexToDecimal(branch_hexadecimal);
+                    }
                     
                     //compute for the hexadecimal difference of label and current source
                     int result = branch_integer - current_line_integer;
