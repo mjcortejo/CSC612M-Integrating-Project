@@ -174,6 +174,11 @@ public class Pipeline {
                 String current_instruction = ExtractInstruction(instruction_line);
 
                 String instruction_state = GetJTableValue(tableProgram, instruction_pc, 3);
+                
+                if(instruction_line.equals("blt x6, x7, L1") && instruction_state.equals("*"))
+                {
+                    System.out.println("THINK MARK THINK");
+                }
 
                 if (instruction_state.equals("WB"))
                 {
@@ -219,9 +224,6 @@ public class Pipeline {
         }
         
         return cycling;
-        //store each PC in a hashmap
-        //each hashmap will act like its own thread
-        //each hashmap value will be updated independently
     }
     
     public String ExtractInstruction(String instruction)
@@ -486,7 +488,7 @@ public class Pipeline {
                     case "bne":
                         if (rs1_value_dec != rs2_value_dec) branch_executed = true;
                         break;
-                    case "blt":
+                    case "blt": 
                         if (rs1_value_dec < rs2_value_dec) branch_executed = true;
                         break;
                     case "bge":
@@ -725,6 +727,16 @@ public class Pipeline {
                     break;
         }
         
+        String[] branch_list = {"beq","bne","blt","bge"};
+        boolean is_branch_instruction = Arrays.stream(branch_list).anyMatch(current_instruction::equals);
+
+        if (!is_branch_instruction && !current_instruction.equals("sw"))
+        {
+            int register_destination_int = GetRegisterTableRow(target_instruction[0]);
+            //write to register table
+            register_model.setValueAt(execution_map.get(instruction_address), register_destination_int, 2);
+        }
+        
         ir_row_index = pipeline_internal_register_map.get("EX/MEM.ALUOutput");
         pipeline_internal_register_model.setValueAt(ALUOutput_String, ir_row_index, 1);
         
@@ -732,8 +744,7 @@ public class Pipeline {
         
         if(current_counter_pc != -1)
         { 
-            String[] branch_list = {"beq","bne","blt","bge"};
-            boolean is_branch_instruction = Arrays.stream(branch_list).anyMatch(current_instruction::equals);
+            is_branch_instruction = Arrays.stream(branch_list).anyMatch(current_instruction::equals);
 
             if (!is_branch_instruction)
             {
