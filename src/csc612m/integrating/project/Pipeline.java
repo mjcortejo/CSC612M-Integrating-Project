@@ -175,11 +175,6 @@ public class Pipeline {
                 String current_instruction = ExtractInstruction(instruction_line);
 
                 String instruction_state = GetJTableValue(tableProgram, instruction_pc, 3);
-                
-                if(instruction_line.equals("blt x6, x7, L1") && instruction_state.equals("*"))
-                {
-                    System.out.println("THINK MARK THINK");
-                }
 
                 if (instruction_state.equals("WB"))
                 {
@@ -409,14 +404,15 @@ public class Pipeline {
             if (branch_executed)
             {
                 System.out.println("Branch Instruction Detected");
-        //                    
+                currently_accessed_registers = new HashMap<String, String>();
+                
                 ir_row_index = pipeline_internal_register_map.get("PC");
 
                 pipeline_internal_register_model.setValueAt(target_branch, ir_row_index, 1);
 
                 ir_row_index = pipeline_internal_register_map.get("IF/ID.NPC");
                 pipeline_internal_register_model.setValueAt(target_branch, ir_row_index, 1);
-
+                
                 pipeline_map_it.remove();
                 branch_executed = false;
             }
